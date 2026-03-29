@@ -1,0 +1,152 @@
+local Players = game:GetService("Players")
+local rs = game:GetService("ReplicatedStorage")
+local HttpService = game:GetService("HttpService")
+local player = Players.LocalPlayer
+
+-- ================== SAVE SYSTEM ==================
+local fileName = "egg_settings.json"
+
+local enabled = true
+local eggAmount = 8
+
+-- 📥 LOAD
+if isfile(fileName) then
+    local success, data = pcall(function()
+        return HttpService:JSONDecode(readfile(fileName))
+    end)
+
+    if success then
+        enabled = data.enabled ~= nil and data.enabled or true
+        eggAmount = data.eggAmount or 8
+    end
+end
+
+-- 📤 SAVE
+local function saveData()
+    local data = {
+        enabled = enabled,
+        eggAmount = eggAmount
+    }
+
+    writefile(fileName, HttpService:JSONEncode(data))
+end
+
+-- ================== AUTO EGG ==================
+local targetFolder
+
+for _, v in pairs(rs:GetChildren()) do
+    if v:FindFirstChild("Functions") and v.Functions:FindFirstChild("OpenEgg") then
+        targetFolder = v
+        break
+    end
+end
+
+-- ================== AUTO TELE ==================
+local targetPosition = Vector3.new(-1890, 695, -453)
+
+local function teleportIfNeeded()
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        local hrp = character.HumanoidRootPart
+        if (hrp.Position - targetPosition).Magnitude > 1 then
+            hrp.CFrame = CFrame.new(targetPosition)
+        end
+    end
+end
+
+-- ================== GUI ==================
+local gui = Instance.new("ScreenGui")
+gui.Name = "HatchEggUI"
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- 🔘 BUTTON
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 240, 0, 60)
+button.Position = UDim2.new(0, 40, 0, 60)
+button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.TextSize = 20
+button.TextWrapped = true
+button.Font = Enum.Font.GothamBold
+button.Parent = gui
+
+-- ✨ bo góc
+Instance.new("UICorner", button).CornerRadius = UDim.new(0, 12)
+
+-- ✨ viền
+local stroke = Instance.new("UIStroke")
+stroke.Thickness = 2
+stroke.Parent = button
+
+-- 🔢 INPUT
+local inputBox = Instance.new("TextBox")
+inputBox.Size = UDim2.new(0, 240, 0, 40)
+inputBox.Position = UDim2.new(0, 40, 0, 130)
+inputBox.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+inputBox.TextSize = 18
+inputBox.Font = Enum.Font.Gotham
+inputBox.PlaceholderText = "Nhập số trứng..."
+inputBox.Parent = gui
+
+Instance.new("UICorner", inputBox).CornerRadius = UDim.new(0, 10)
+
+-- 🎨 UPDATE UI
+local function updateUI()
+    if enabled then
+        button.Text = "Hatch Egg Event: ON"
+        stroke.Color = Color3.fromRGB(0, 200, 100)
+    else
+        button.Text = "Hatch Egg Event: OFF"
+        stroke.Color = Color3.fromRGB(255, 80, 80)
+    end
+
+    inputBox.Text = tostring(eggAmount)
+end
+
+updateUI()
+
+-- 🔘 TOGGLE
+button.MouseButton1Click:Connect(function()
+    enabled = not enabled
+    updateUI()
+    saveData()
+end)
+
+-- 🔢 INPUT HANDLE
+inputBox.FocusLost:Connect(function()
+    local num = tonumber(inputBox.Text)
+
+    if num and num > 0 then
+        eggAmount = math.floor(num)
+        inputBox.Text = tostring(eggAmount)
+        saveData()
+    else
+        inputBox.Text = tostring(eggAmount)
+    end
+end)
+
+-- ================== LOOP AUTO EGG ==================
+task.spawn(function()
+    while true do
+        if enabled and targetFolder then
+            local args = {
+                "St Patrick Event",
+                eggAmount
+            }
+
+            targetFolder.Functions.OpenEgg:InvokeServer(unpack(args))
+        end
+        task.wait(0.5)
+    end
+end)
+
+-- ================== LOOP TELEPORT ==================
+task.spawn(function()
+    while true do
+        if enabled then
+            teleportIfNeeded()
+        end
+        task.wait(8)
+    end
+end)
