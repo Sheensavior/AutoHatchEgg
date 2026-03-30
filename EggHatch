@@ -42,7 +42,7 @@ for _, v in pairs(rs:GetChildren()) do
 end
 
 -- ================== AUTO TELE ==================
-local targetPosition = Vector3.new(-1890, 695, -453)
+local targetPosition = Vector3.new(2478, 253, -144)
 
 local function teleportIfNeeded()
     local character = player.Character
@@ -131,7 +131,7 @@ task.spawn(function()
     while true do
         if enabled and targetFolder then
             local args = {
-                "St Patrick Event",
+                "Garden Fairy",
                 eggAmount
             }
 
