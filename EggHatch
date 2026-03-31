@@ -131,7 +131,7 @@ task.spawn(function()
     while true do
         if enabled and targetFolder then
             local args = {
-                "Garden Fairy",
+                "Spring Blossom",
                 eggAmount
             }
 
