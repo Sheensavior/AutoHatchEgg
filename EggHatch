@@ -42,7 +42,7 @@ for _, v in pairs(rs:GetChildren()) do
 end
 
 -- ================== AUTO TELE ==================
-local targetPosition = Vector3.new(2478, 253, -144)
+local targetPosition = Vector3.new(2475.5, 253, -154)
 
 local function teleportIfNeeded()
     local character = player.Character
