@@ -1,3 +1,29 @@
+-- ================== WAIT GAME LOAD ==================
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+-- đợi Player + Character
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+while not player do
+    task.wait()
+    player = Players.LocalPlayer
+end
+
+-- đợi character load (tránh lỗi teleport / humanoid)
+if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+    player.CharacterAdded:Wait()
+end
+
+-- đợi PlayerGui load
+player:WaitForChild("PlayerGui")
+
+task.wait(2) -- buffer thêm cho UI game load hết
+
+print("✅ Game Loaded - Script Starting")
+
 local Players = game:GetService("Players")
 local rs = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
