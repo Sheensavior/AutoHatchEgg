@@ -321,6 +321,8 @@ rainbowBtn.MouseButton1Click:Connect(function()
 
         AutoSystem.isRainbowRunning = false
         AutoSystem.mode = "EGG"
+        setInventory(true)
+        waitForInventoryLoad(3)
         updateUI()
     end)
 end)
