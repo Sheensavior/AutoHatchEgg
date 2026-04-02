@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local rs = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
 -- ================== CONFIG ==================
@@ -138,18 +139,81 @@ local function tp(pos)
     end
 end
 
+-- ================== TRADE ==================
+local IDServer = nil
+for _, v in pairs(rs:GetChildren()) do
+    if v:FindFirstChild("Functions") and v:FindFirstChild("Events") then
+        IDServer = v.Name
+        break
+    end
+end
+
+local function getTradePets()
+    local petFolder = player.PlayerGui:WaitForChild("Trading")
+        :WaitForChild("Trading")
+        :WaitForChild("You")
+        :WaitForChild("Inner")
+        :WaitForChild("MainList")
+
+    local pets = {}
+
+    for _, v in pairs(petFolder:GetChildren()) do
+        if v.Name ~= "UIGridLayout" and v.Name ~= "AddPass" then
+            table.insert(pets, v.Name)
+        end
+    end
+
+    return pets
+end
+
+local function tradePets(amount)
+    local pets = getTradePets()
+
+    if not IDServer then
+        warn("Không có ID Server!")
+        return
+    end
+
+    if #pets == 0 then
+        warn("Không có pet!")
+        return
+    end
+
+    for i = 1, amount do
+        local petID = pets[i]
+        if not petID then break end
+
+        local args = {
+            {
+                "Pet",
+                petID
+            }
+        }
+
+        rs:WaitForChild(IDServer)
+            :WaitForChild("Functions")
+            :WaitForChild("AddTradeItem")
+            :InvokeServer(unpack(args))
+
+        task.wait(0.2)
+    end
+end
+
 -- ================== GUI ==================
-local gui = Instance.new("ScreenGui", player.PlayerGui)
+local gui = Instance.new("ScreenGui")
+gui.Parent = game:GetService("CoreGui")
+gui.ResetOnSpawn = false
+gui.DisplayOrder = 999999
 
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 380, 0, 340)
-main.Position = UDim2.new(0.3,0,0.3,0)
+main.Size = UDim2.new(0, 380, 0, 420)
+main.AnchorPoint = Vector2.new(1,1)
+main.Position = UDim2.new(1, -10, 1, -10)
 main.BackgroundColor3 = Color3.fromRGB(20,20,20)
 main.Active = true
 main.Draggable = true
 Instance.new("UICorner", main)
 
--- TOP BAR
 local top = Instance.new("Frame", main)
 top.Size = UDim2.new(1,0,0,40)
 top.BackgroundColor3 = Color3.fromRGB(15,15,15)
@@ -196,7 +260,7 @@ modeLabel.TextColor3 = Color3.new(1,1,1)
 modeLabel.Font = Enum.Font.GothamBold
 modeLabel.TextSize = 18
 
--- INPUT
+-- INPUT EGG
 local input = Instance.new("TextBox", content)
 input.Size = UDim2.new(1,-20,0,55)
 input.Position = UDim2.new(0,10,0,110)
@@ -216,18 +280,39 @@ rainbowBtn.Text = "AUTO RAINBOW"
 rainbowBtn.BackgroundColor3 = Color3.fromRGB(0,120,200)
 rainbowBtn.TextColor3 = Color3.new(1,1,1)
 rainbowBtn.Font = Enum.Font.GothamBold
-rainbowBtn.TextSize = 18
+rainbowBtn.TextSize = 24
 Instance.new("UICorner", rainbowBtn)
 
--- MINIMIZE LOGIC
+-- TRADE INPUT
+local tradeBox = Instance.new("TextBox", content)
+tradeBox.Size = UDim2.new(1,-20,0,45)
+tradeBox.Position = UDim2.new(0,10,0,250)
+tradeBox.PlaceholderText = "Số pet trade..."
+tradeBox.Text = "1"
+tradeBox.TextSize = 18
+tradeBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+tradeBox.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", tradeBox)
+
+-- TRADE BUTTON
+local tradeBtn = Instance.new("TextButton", content)
+tradeBtn.Size = UDim2.new(1,-20,0,45)
+tradeBtn.Position = UDim2.new(0,10,0,300)
+tradeBtn.Text = "TRADE PET"
+tradeBtn.TextSize = 18
+tradeBtn.BackgroundColor3 = Color3.fromRGB(200,120,0)
+tradeBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", tradeBtn)
+
+-- MINIMIZE
 local minimized = false
 minimize.MouseButton1Click:Connect(function()
     minimized = not minimized
     content.Visible = not minimized
-    main.Size = minimized and UDim2.new(0,200,0,40) or UDim2.new(0,380,0,340)
+    main.Size = minimized and UDim2.new(0,200,0,40) or UDim2.new(0,380,0,420)
 end)
 
--- ================== UI ==================
+-- UI UPDATE
 local function updateUI()
     toggle.Text = AutoSystem.enabled and "ON" or "OFF"
     toggle.BackgroundColor3 = AutoSystem.enabled and Color3.fromRGB(0,170,100) or Color3.fromRGB(170,0,0)
@@ -256,6 +341,13 @@ input.FocusLost:Connect(function()
         saveData()
     end
     updateUI()
+end)
+
+-- TRADE CLICK
+tradeBtn.MouseButton1Click:Connect(function()
+    local amount = tonumber(tradeBox.Text)
+    if not amount then return end
+    tradePets(amount)
 end)
 
 -- ================== AUTO RAINBOW ==================
@@ -326,7 +418,25 @@ rainbowBtn.MouseButton1Click:Connect(function()
         updateUI()
     end)
 end)
+-- ================== AUTO INVENTORY LOOP ==================
+task.spawn(function()
+    while true do
+        if AutoSystem.enabled and not AutoSystem.isRainbowRunning then
+            setInventory(true)
+            waitForInventoryLoad(5)
 
+            -- đợi 10 phút
+            local t = 0
+            while t < 600 do
+                if not AutoSystem.enabled then break end
+                task.wait(1)
+                t += 1
+            end
+        else
+            task.wait(1)
+        end
+    end
+end)
 -- ================== MAIN LOOP ==================
 task.spawn(function()
     while true do
