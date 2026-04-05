@@ -1,3 +1,4 @@
+if placeId == 75992362647444 then
 -- ================== WAIT GAME LOAD ==================
 if not game:IsLoaded() then
     game.Loaded:Wait()
@@ -495,3 +496,4 @@ task.spawn(function()
         task.wait(0.5)
     end
 end)
+end
