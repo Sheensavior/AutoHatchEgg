@@ -1,3 +1,5 @@
+local placeId = game.PlaceId
+
 if placeId == 75992362647444 then
 -- ================== WAIT GAME LOAD ==================
 if not game:IsLoaded() then
