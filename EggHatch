@@ -597,7 +597,7 @@ end)
 -- ================== SMART MINIGAME SYSTEM ==================
 
 local TARGET_POS = Vector3.new(92.8, 3508.5, 378)
-local THRESHOLD = 0.005
+local THRESHOLD = 0.01
 
 local clicked = false
 local started = false
