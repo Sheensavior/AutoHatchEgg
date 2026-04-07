@@ -562,7 +562,18 @@ end
 local function isMiniGameNeeded()
     local current, max = getProgress()
     if not current or not max then return false end
-    return current < max
+
+    -- 🔥 nếu chưa full → chạy
+    if current < max then
+        return true
+    end
+
+    -- 🔥 nếu đã full nhưng có "Start Now!" → vẫn chạy
+    if current == max and isStartNowVisible() then
+        return true
+    end
+
+    return false
 end
 
 -- click
@@ -641,7 +652,20 @@ local function getProgress()
     local a, b = string.match(text, "(%d+)%s*/%s*(%d+)")
     return tonumber(a), tonumber(b)
 end
+local function isStartNowVisible()
+    local gui = player.PlayerGui
+    local mg = gui:FindFirstChild("Minigames")
+    if not mg then return false end
 
+    -- ⚠️ chỉnh đúng path theo ảnh của bạn
+    local startBtn = mg:FindFirstChild("StartButton", true)
+
+    if startBtn and startBtn:IsA("TextLabel") or startBtn:IsA("TextButton") then
+        return startBtn.Text == "Start Now!"
+    end
+
+    return false
+end
 -- ================== MAIN MINIGAME LOOP ==================
 task.spawn(function()
     while true do
