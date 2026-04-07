@@ -275,7 +275,7 @@ content.BackgroundTransparency = 1
 -- TOGGLE
 local toggle = Instance.new("TextButton", content)
 toggle.Size = UDim2.new(1,-20,0,50)
-toggle.Position = UDim2.new(0,10,0,10)
+toggle.Position = UDim2.new(0,10,0,60)
 toggle.Font = Enum.Font.GothamBold
 toggle.TextSize = 20
 toggle.TextColor3 = Color3.new(1,1,1)
@@ -284,7 +284,7 @@ Instance.new("UICorner", toggle)
 -- AUTO CLICK TOGGLE
 local autoClickBtn = Instance.new("TextButton", content)
 autoClickBtn.Size = UDim2.new(1,-20,0,45)
-autoClickBtn.Position = UDim2.new(0,10,0,70)
+autoClickBtn.Position = UDim2.new(0,10,0,10)
 autoClickBtn.Font = Enum.Font.GothamBold
 autoClickBtn.TextSize = 18
 autoClickBtn.TextColor3 = Color3.new(1,1,1)
