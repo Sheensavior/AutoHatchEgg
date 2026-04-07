@@ -490,7 +490,7 @@ end)
 -- ================== MAIN LOOP ==================
 task.spawn(function()
     while true do
-        if AutoSystem.enabled and not AutoSystem.isRainbowRunning then
+        if AutoSystem.enabled and not AutoSystem.isRainbowRunning and AutoSystem.mode ~= "MINIGAME" then
             local ids = getPets()
 
             if AutoSystem.mode == "EGG" then
@@ -525,7 +525,7 @@ task.spawn(function()
     local baseX, baseY = 1050, 100
 
     while true do
-        if AutoSystem.autoClick then
+        if AutoSystem.autoClick and AutoSystem.mode ~= "MINIGAME" then
             pcall(function()
                 local offsetX = math.random(-5,5)
                 local offsetY = math.random(-5,5)
@@ -535,6 +535,117 @@ task.spawn(function()
             end)
         end
         task.wait(0.05)
+    end
+end)
+
+-- ================== AUTO MINIGAME FULL SYSTEM ==================
+
+local player = game.Players.LocalPlayer
+local gui = player.PlayerGui
+
+local progressText = workspace.Game.DigCooldown.Board.SurfaceGui.Bar.Progress
+
+local THRESHOLD = 0.01
+local clicked = false
+local teleported = false
+
+-- đọc progress
+local function getProgress()
+    local text = progressText.Text or ""
+    local a, b = string.match(text, "(%d+)%s*/%s*(%d+)")
+    return tonumber(a), tonumber(b)
+end
+
+-- check cần chơi minigame không
+local function isMiniGameNeeded()
+    local current, max = getProgress()
+    if not current or not max then return false end
+    return current < max
+end
+
+-- click
+local function clickOnce()
+    pcall(function()
+        mousemoveabs(1050,100)
+        mouse1click()
+    end)
+end
+
+-- ================== AUTO MODE SWITCH ==================
+task.spawn(function()
+    while true do
+        if AutoSystem and AutoSystem.enabled then
+            
+            if isMiniGameNeeded() then
+                AutoSystem.mode = "MINIGAME"
+                AutoSystem.autoClick = false
+            else
+                if AutoSystem.mode == "MINIGAME" then
+                    AutoSystem.mode = "EGG"
+                    AutoSystem.autoClick = true
+                    clicked = false
+                    teleported = false
+                end
+            end
+
+        end
+        task.wait(0.2)
+    end
+end)
+
+-- ================== AUTO MINIGAME ==================
+task.spawn(function()
+    while true do
+        task.wait()
+
+        if not (AutoSystem and AutoSystem.enabled and AutoSystem.mode == "MINIGAME") then
+            continue
+        end
+
+        local current, max = getProgress()
+        if not current or not max then continue end
+
+        if current >= max then
+            clicked = false
+            teleported = false
+            continue
+        end
+
+        -- teleport + start
+        if not teleported then
+            teleported = true
+
+            pcall(function()
+                local char = player.Character or player.CharacterAdded:Wait()
+                local hrp = char:WaitForChild("HumanoidRootPart")
+                hrp.CFrame = CFrame.new(97, 3509, 376)
+            end)
+
+            task.wait(0.2)
+            clickOnce()
+        end
+
+        -- lấy UI
+        local success, err = pcall(function()
+            local cursor = gui.Minigames.Main.Cursor
+            local hit = gui.Minigames.Main.CanvasGroup.Hit
+
+            if not cursor or not hit then return end
+
+            local cursorX = cursor.Position.X.Scale
+            local hitX = hit.Position.X.Scale
+
+            local diff = math.abs(cursorX - hitX)
+
+            if diff <= THRESHOLD then
+                if not clicked then
+                    clicked = true
+                    clickOnce()
+                end
+            else
+                clicked = false
+            end
+        end)
     end
 end)
 
