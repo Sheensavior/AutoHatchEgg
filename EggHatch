@@ -601,6 +601,7 @@ local THRESHOLD = 0.01
 
 local clicked = false
 local started = false
+local lastCursorX = nil
 
 -- làm tròn vị trí để tránh lệch
 local function isAtPosition()
@@ -661,7 +662,7 @@ task.spawn(function()
             -- nếu chưa ở đúng vị trí → TP + click mở
             if not isAtPosition() then
                 goToMiniGame()
-                task.wait(0.2)
+                task.wait(0.5)
 
                 clickOnce()
                 started = true
@@ -669,27 +670,69 @@ task.spawn(function()
                 continue
             end
 
-            -- nếu đã ở đúng vị trí → chơi luôn
-            local success = pcall(function()
-                local cursor = gui.Minigames.Main.Cursor
-                local hit = gui.Minigames.Main.CanvasGroup.Hit
-
-                if not cursor or not hit then return end
-
-                local cursorX = cursor.Position.X.Scale
-                local hitX = hit.Position.X.Scale
-
-                local diff = math.abs(cursorX - hitX)
-
-                if diff <= THRESHOLD then
-                    if not clicked then
-                        clicked = true
+            -- nếu đã ở đúng vị trí → chơi hoặc mở minigame
+                local success = pcall(function()
+                local mg = gui:FindFirstChild("Minigames")
+                    if not mg then
                         clickOnce()
+                    return
                     end
-                else
-                    clicked = false
-                end
-            end)
+
+                local main = mg:FindFirstChild("Main")
+                    if not main then
+                        clickOnce()
+                        return
+                    end
+
+    local cursor = main:FindFirstChild("Cursor")
+    local canvas = main:FindFirstChild("CanvasGroup")
+    local hit = canvas and canvas:FindFirstChild("Hit")
+
+    -- ❌ chưa có cursor/hit → spam click mở game
+    if not cursor or not hit then
+        clickOnce()
+        task.wait(0.1)
+        return
+    end
+
+    -- ✅ đã có → chơi minigame
+    local cursorX = cursor.Position.X.Scale
+    local hitX = hit.Position.X.Scale
+
+    local diff = math.abs(cursorX - hitX)
+
+-- chưa có dữ liệu trước đó
+        if not lastCursorX then
+        lastCursorX = cursorX
+        return
+        end
+
+-- hướng di chuyển
+        local movingRight = cursorX > lastCursorX
+
+        -- 🎯 PREDICT CLICK
+        local predictZone = THRESHOLD * 3
+
+        if not clicked then
+    -- cursor đang đi tới hit → click sớm
+            if movingRight and cursorX < hitX and (hitX - cursorX) <= predictZone then
+            clicked = true
+            clickOnce()
+
+            elseif not movingRight and cursorX > hitX and (cursorX - hitX) <= predictZone then
+            clicked = true
+            clickOnce()
+            end
+        end
+
+    -- reset khi đi qua
+        if diff > THRESHOLD then
+        clicked = false
+        end
+
+        lastCursorX = cursorX
+
+        end)
 
         else
             if AutoSystem.mode == "MINIGAME" then
