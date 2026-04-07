@@ -597,7 +597,7 @@ end)
 -- ================== SMART MINIGAME SYSTEM ==================
 
 local TARGET_POS = Vector3.new(92.8, 3508.5, 378)
-local THRESHOLD = 0.01
+local THRESHOLD = 0.005
 
 local clicked = false
 local started = false
@@ -638,9 +638,8 @@ local function getProgress()
 end
 
 -- ================== MAIN MINIGAME LOOP ==================
-task.spawn(function()
-    while true do
-        task.wait()
+local RunService = game:GetService("RunService")
+RunService.RenderStepped:Connect(function()
 
         if not AutoSystem.enabled then continue end
 
@@ -682,21 +681,15 @@ task.spawn(function()
                 local diff = math.abs(cursorX - hitX)
 
                 if diff <= THRESHOLD then
-                    if not clicked then
-                        clicked = true
-                        clickOnce()
-                    end
-                else
-                    clicked = false
+                    clickOnce()
                 end
-            end)
 
         else
             if AutoSystem.mode == "MINIGAME" then
 
         -- 🔥 nếu hoàn thành 10/10
                 if current == max then
-                    task.wait(0.3)
+                    task.wait(0.5)
 
             -- 🎯 click nhận thưởng TRƯỚC
                     pcall(function()
