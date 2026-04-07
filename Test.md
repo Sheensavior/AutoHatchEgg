@@ -683,6 +683,7 @@ RunService.RenderStepped:Connect(function()
                 if diff <= THRESHOLD then
                     clickOnce()
                 end
+            end)
 
         else
             if AutoSystem.mode == "MINIGAME" then
