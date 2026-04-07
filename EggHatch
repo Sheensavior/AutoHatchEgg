@@ -800,7 +800,7 @@ lastCursorX = cursorX
             -- 🎯 click nhận thưởng TRƯỚC
                     pcall(function()
                         for i = 1,2 do
-                            mousemoveabs(581, 505)
+                            mousemoveabs(565, 599)
                             task.wait(0.05)
                             mouse1click()
                             task.wait(0.2)
