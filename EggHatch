@@ -604,6 +604,7 @@ local THRESHOLD = 0.01
 local clicked = false
 local started = false
 local lastCursorX = nil
+local freezeTime = 0
 
 -- làm tròn vị trí để tránh lệch
 local function isAtPosition()
@@ -664,6 +665,9 @@ task.spawn(function()
             -- nếu chưa ở đúng vị trí → TP + click mở
             if not isAtPosition() then
                 goToMiniGame()
+                lastCursorX = nil
+                freezeTime = 0
+                clicked = false
                 task.wait(0.5)
 
                 clickOnce()
@@ -709,30 +713,43 @@ task.spawn(function()
         return
         end
 
+-- 🧠 check freeze (cursor đứng im)
+if math.abs(cursorX - lastCursorX) < 0.0001 then
+    freezeTime += 1
+else
+    freezeTime = 0
+end
+
+-- 🚨 nếu bị đứng → click nhẹ để reset game
+if freezeTime > 10 then
+    freezeTime = 0
+    clicked = false
+    clickOnce()
+end
+
 -- hướng di chuyển
-        local movingRight = cursorX > lastCursorX
+local movingRight = cursorX > lastCursorX
 
-        -- 🎯 PREDICT CLICK
-        local predictZone = THRESHOLD * 3
+-- 🎯 predict click sớm
+local predictZone = THRESHOLD * 3
 
-        if not clicked then
-    -- cursor đang đi tới hit → click sớm
-            if movingRight and cursorX < hitX and (hitX - cursorX) <= predictZone then
-            clicked = true
-            clickOnce()
+if not clicked then
+    if movingRight and cursorX < hitX and (hitX - cursorX) <= predictZone then
+        clicked = true
+        clickOnce()
 
-            elseif not movingRight and cursorX > hitX and (cursorX - hitX) <= predictZone then
-            clicked = true
-            clickOnce()
-            end
-        end
+    elseif not movingRight and cursorX > hitX and (cursorX - hitX) <= predictZone then
+        clicked = true
+        clickOnce()
+    end
+end
 
-    -- reset khi đi qua
-        if diff > THRESHOLD then
-        clicked = false
-        end
+-- reset sau khi đi qua hit
+if diff > THRESHOLD then
+    clicked = false
+end
 
-        lastCursorX = cursorX
+lastCursorX = cursorX
 
         end)
 
