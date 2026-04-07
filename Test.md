@@ -1,3 +1,6 @@
+repeat task.wait() until game:IsLoaded()
+repeat task.wait() until game.Players.LocalPlayer
+
 local placeId = game.PlaceId
 
 if placeId == 75992362647444 or placeId == 111187356770616 then
