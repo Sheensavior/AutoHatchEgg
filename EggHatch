@@ -644,7 +644,7 @@ end
 -- ================== MAIN MINIGAME LOOP ==================
 task.spawn(function()
     while true do
-        task.wait()
+        task.wait(0.01)
 
         if not AutoSystem.enabled then continue end
 
@@ -703,6 +703,7 @@ task.spawn(function()
 
     -- ✅ đã có → chơi minigame
     local cursorX = cursor.Position.X.Scale
+    cursorX = tonumber(string.format("%.4f", cursorX))
     local hitX = hit.Position.X.Scale
 
     local diff = math.abs(cursorX - hitX)
@@ -714,17 +715,20 @@ task.spawn(function()
         end
 
 -- 🧠 check freeze (cursor đứng im)
-if math.abs(cursorX - lastCursorX) < 0.0001 then
+if math.abs(cursorX - lastCursorX) < 0.001 then
     freezeTime += 1
 else
     freezeTime = 0
 end
 
 -- 🚨 nếu bị đứng → click nhẹ để reset game
-if freezeTime > 10 then
+if freezeTime > 6 then
     freezeTime = 0
     clicked = false
+
+    -- click nhẹ reset + delay tránh spam
     clickOnce()
+    task.wait(0.05)
 end
 
 -- hướng di chuyển
