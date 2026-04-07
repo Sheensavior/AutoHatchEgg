@@ -594,58 +594,113 @@ task.spawn(function()
 end)
 
 -- ================== AUTO MINIGAME ==================
+-- ================== SMART MINIGAME SYSTEM ==================
+
+local TARGET_POS = Vector3.new(92.8, 3508.5, 378)
+local THRESHOLD = 0.01
+
+local clicked = false
+local started = false
+
+-- làm tròn vị trí để tránh lệch
+local function isAtPosition()
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return false end
+
+    local pos = char.HumanoidRootPart.Position
+
+    return math.floor(pos.X) == math.floor(TARGET_POS.X)
+        and math.floor(pos.Y) == math.floor(TARGET_POS.Y)
+        and math.floor(pos.Z) == math.floor(TARGET_POS.Z)
+end
+
+-- teleport an toàn
+local function goToMiniGame()
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    hrp.CFrame = CFrame.new(TARGET_POS)
+end
+
+-- click 1 lần
+local function clickOnce()
+    pcall(function()
+        mousemoveabs(1050,100)
+        mouse1click()
+    end)
+end
+
+-- đọc progress
+local function getProgress()
+    local text = progressText.Text or ""
+    local a, b = string.match(text, "(%d+)%s*/%s*(%d+)")
+    return tonumber(a), tonumber(b)
+end
+
+-- ================== MAIN MINIGAME LOOP ==================
 task.spawn(function()
     while true do
         task.wait()
 
-        if not (AutoSystem and AutoSystem.enabled and AutoSystem.mode == "MINIGAME") then
-            continue
-        end
+        if not AutoSystem.enabled then continue end
 
         local current, max = getProgress()
         if not current or not max then continue end
 
-        if current >= max then
-            clicked = false
-            teleported = false
-            continue
-        end
+        -- ================== CẦN CHƠI MINIGAME ==================
+        if current < max then
 
-        -- teleport + start
-        if not teleported then
-            teleported = true
+            AutoSystem.mode = "MINIGAME"
+            AutoSystem.autoClick = false
 
+            -- tắt inventory nếu có
             pcall(function()
-                local char = player.Character or player.CharacterAdded:Wait()
-                local hrp = char:WaitForChild("HumanoidRootPart")
-                hrp.CFrame = CFrame.new(97, 3509, 376)
+                inventoryUI.Enabled = false
             end)
 
-            task.wait(0.2)
-            clickOnce()
-        end
+            -- nếu chưa ở đúng vị trí → TP + click mở
+            if not isAtPosition() then
+                goToMiniGame()
+                task.wait(0.2)
 
-        -- lấy UI
-        local success, err = pcall(function()
-            local cursor = gui.Minigames.Main.Cursor
-            local hit = gui.Minigames.Main.CanvasGroup.Hit
-
-            if not cursor or not hit then return end
-
-            local cursorX = cursor.Position.X.Scale
-            local hitX = hit.Position.X.Scale
-
-            local diff = math.abs(cursorX - hitX)
-
-            if diff <= THRESHOLD then
-                if not clicked then
-                    clicked = true
-                    clickOnce()
-                end
-            else
+                clickOnce()
+                started = true
                 clicked = false
+                continue
             end
-        end)
+
+            -- nếu đã ở đúng vị trí → chơi luôn
+            local success = pcall(function()
+                local cursor = gui.Minigames.Main.Cursor
+                local hit = gui.Minigames.Main.CanvasGroup.Hit
+
+                if not cursor or not hit then return end
+
+                local cursorX = cursor.Position.X.Scale
+                local hitX = hit.Position.X.Scale
+
+                local diff = math.abs(cursorX - hitX)
+
+                if diff <= THRESHOLD then
+                    if not clicked then
+                        clicked = true
+                        clickOnce()
+                    end
+                else
+                    clicked = false
+                end
+            end)
+
+        else
+            -- ================== HOÀN THÀNH MINIGAME ==================
+            if AutoSystem.mode == "MINIGAME" then
+                AutoSystem.mode = "EGG"
+                AutoSystem.autoClick = true
+
+                clicked = false
+                started = false
+            end
+        end
     end
 end)
 
