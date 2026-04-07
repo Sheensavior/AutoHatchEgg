@@ -348,7 +348,7 @@ local minimized = false
 minimize.MouseButton1Click:Connect(function()
     minimized = not minimized
     content.Visible = not minimized
-    main.Size = minimized and UDim2.new(0,200,0,40) or UDim2.new(0,380,0,420)
+    main.Size = minimized and UDim2.new(0,200,0,40) or UDim2.new(0,380,0,470)
 end)
 
 -- UI UPDATE
