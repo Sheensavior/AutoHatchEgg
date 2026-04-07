@@ -46,7 +46,7 @@ local AutoSystem = {
     enabled = true,
     eggAmount = 8,
     mode = "EGG",
-    isRainbowRunning = false
+    isRainbowRunning = false,
     autoClick = true
 }
 
