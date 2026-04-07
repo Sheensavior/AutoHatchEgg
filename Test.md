@@ -638,8 +638,9 @@ local function getProgress()
 end
 
 -- ================== MAIN MINIGAME LOOP ==================
-local RunService = game:GetService("RunService")
-RunService.RenderStepped:Connect(function()
+task.spawn(function()
+    while true do
+        task.wait()
 
         if not AutoSystem.enabled then continue end
 
@@ -667,7 +668,7 @@ RunService.RenderStepped:Connect(function()
                 clicked = false
                 continue
             end
-
+end)
             -- nếu đã ở đúng vị trí → chơi luôn
             local success = pcall(function()
                 local cursor = gui.Minigames.Main.Cursor
@@ -683,9 +684,8 @@ RunService.RenderStepped:Connect(function()
                 if diff <= THRESHOLD then
                     clickOnce()
                 end
-            end)
 
-        --else
+        else
             if AutoSystem.mode == "MINIGAME" then
 
         -- 🔥 nếu hoàn thành 10/10
