@@ -668,7 +668,7 @@ task.spawn(function()
                 clicked = false
                 continue
             end
-end)
+
             -- nếu đã ở đúng vị trí → chơi luôn
             local success = pcall(function()
                 local cursor = gui.Minigames.Main.Cursor
@@ -682,15 +682,21 @@ end)
                 local diff = math.abs(cursorX - hitX)
 
                 if diff <= THRESHOLD then
-                    clickOnce()
+                    if not clicked then
+                        clicked = true
+                        clickOnce()
+                    end
+                else
+                    clicked = false
                 end
+            end)
 
         else
             if AutoSystem.mode == "MINIGAME" then
 
         -- 🔥 nếu hoàn thành 10/10
                 if current == max then
-                    task.wait(0.5)
+                    task.wait(0.3)
 
             -- 🎯 click nhận thưởng TRƯỚC
                     pcall(function()
