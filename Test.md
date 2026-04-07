@@ -692,13 +692,19 @@ task.spawn(function()
             end)
 
         else
-            -- ================== HOÀN THÀNH MINIGAME ==================
             if AutoSystem.mode == "MINIGAME" then
                 AutoSystem.mode = "EGG"
                 AutoSystem.autoClick = true
 
                 clicked = false
                 started = false
+
+                -- ✅ bật lại inventory giống Rainbow
+                pcall(function()
+                inventoryUI.Enabled = true
+                end)
+
+                waitForInventoryLoad(3) -- nếu bạn có hàm này
             end
         end
     end
