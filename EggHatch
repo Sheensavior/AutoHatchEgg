@@ -1,3 +1,6 @@
+repeat task.wait() until game:IsLoaded()
+repeat task.wait() until game.Players.LocalPlayer
+
 local placeId = game.PlaceId
 
 if placeId == 75992362647444 or placeId == 111187356770616 then
@@ -46,7 +49,8 @@ local AutoSystem = {
     enabled = true,
     eggAmount = 8,
     mode = "EGG",
-    isRainbowRunning = false
+    isRainbowRunning = false,
+    autoClick = true
 }
 
 -- ================== SAVE ==================
@@ -235,7 +239,7 @@ gui.ResetOnSpawn = false
 gui.DisplayOrder = 999999
 
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 380, 0, 420)
+main.Size = UDim2.new(0,380,0,470)
 main.AnchorPoint = Vector2.new(1,1)
 main.Position = UDim2.new(1, -10, 1, -10)
 main.BackgroundColor3 = Color3.fromRGB(20,20,20)
@@ -274,16 +278,25 @@ content.BackgroundTransparency = 1
 -- TOGGLE
 local toggle = Instance.new("TextButton", content)
 toggle.Size = UDim2.new(1,-20,0,50)
-toggle.Position = UDim2.new(0,10,0,10)
+toggle.Position = UDim2.new(0,10,0,60)
 toggle.Font = Enum.Font.GothamBold
 toggle.TextSize = 20
 toggle.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", toggle)
 
+-- AUTO CLICK TOGGLE
+local autoClickBtn = Instance.new("TextButton", content)
+autoClickBtn.Size = UDim2.new(1,-20,0,45)
+autoClickBtn.Position = UDim2.new(0,10,0,10)
+autoClickBtn.Font = Enum.Font.GothamBold
+autoClickBtn.TextSize = 18
+autoClickBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", autoClickBtn)
+
 -- MODE
 local modeLabel = Instance.new("TextLabel", content)
 modeLabel.Size = UDim2.new(1,-20,0,30)
-modeLabel.Position = UDim2.new(0,10,0,70)
+modeLabel.Position = UDim2.new(0,10,0,120)
 modeLabel.BackgroundTransparency = 1
 modeLabel.TextColor3 = Color3.new(1,1,1)
 modeLabel.Font = Enum.Font.GothamBold
@@ -292,7 +305,7 @@ modeLabel.TextSize = 18
 -- INPUT EGG
 local input = Instance.new("TextBox", content)
 input.Size = UDim2.new(1,-20,0,55)
-input.Position = UDim2.new(0,10,0,110)
+input.Position = UDim2.new(0,10,0,160)
 input.BackgroundColor3 = Color3.fromRGB(40,40,40)
 input.TextColor3 = Color3.new(1,1,1)
 input.Font = Enum.Font.GothamBold
@@ -304,7 +317,7 @@ Instance.new("UICorner", input)
 -- RAINBOW BUTTON
 local rainbowBtn = Instance.new("TextButton", content)
 rainbowBtn.Size = UDim2.new(1,-20,0,50)
-rainbowBtn.Position = UDim2.new(0,10,0,190)
+rainbowBtn.Position = UDim2.new(0,10,0,240)
 rainbowBtn.Text = "AUTO RAINBOW"
 rainbowBtn.BackgroundColor3 = Color3.fromRGB(0,120,200)
 rainbowBtn.TextColor3 = Color3.new(1,1,1)
@@ -315,7 +328,7 @@ Instance.new("UICorner", rainbowBtn)
 -- TRADE INPUT
 local tradeBox = Instance.new("TextBox", content)
 tradeBox.Size = UDim2.new(1,-20,0,45)
-tradeBox.Position = UDim2.new(0,10,0,250)
+tradeBox.Position = UDim2.new(0,10,0,300)
 tradeBox.PlaceholderText = "Số pet trade..."
 tradeBox.Text = "1"
 tradeBox.TextSize = 18
@@ -326,7 +339,7 @@ Instance.new("UICorner", tradeBox)
 -- TRADE BUTTON
 local tradeBtn = Instance.new("TextButton", content)
 tradeBtn.Size = UDim2.new(1,-20,0,45)
-tradeBtn.Position = UDim2.new(0,10,0,300)
+tradeBtn.Position = UDim2.new(0,10,0,350)
 tradeBtn.Text = "TRADE PET"
 tradeBtn.TextSize = 18
 tradeBtn.BackgroundColor3 = Color3.fromRGB(200,120,0)
@@ -338,13 +351,16 @@ local minimized = false
 minimize.MouseButton1Click:Connect(function()
     minimized = not minimized
     content.Visible = not minimized
-    main.Size = minimized and UDim2.new(0,200,0,40) or UDim2.new(0,380,0,420)
+    main.Size = minimized and UDim2.new(0,200,0,40) or UDim2.new(0,380,0,470)
 end)
 
 -- UI UPDATE
 local function updateUI()
     toggle.Text = AutoSystem.enabled and "ON" or "OFF"
     toggle.BackgroundColor3 = AutoSystem.enabled and Color3.fromRGB(0,170,100) or Color3.fromRGB(170,0,0)
+
+    autoClickBtn.Text = AutoSystem.autoClick and "AUTO CLICK: ON" or "AUTO CLICK: OFF"
+    autoClickBtn.BackgroundColor3 = AutoSystem.autoClick and Color3.fromRGB(0,170,100) or Color3.fromRGB(170,0,0)
 
     if AutoSystem.isRainbowRunning then
         modeLabel.Text = "Mode: RAINBOW"
@@ -356,6 +372,11 @@ local function updateUI()
 end
 
 updateUI()
+
+autoClickBtn.MouseButton1Click:Connect(function()
+    AutoSystem.autoClick = not AutoSystem.autoClick
+    updateUI()
+end)
 
 toggle.MouseButton1Click:Connect(function()
     AutoSystem.enabled = not AutoSystem.enabled
@@ -498,4 +519,23 @@ task.spawn(function()
         task.wait(0.5)
     end
 end)
+
+-- ================== AUTO CLICK ==================
+task.spawn(function()
+    local baseX, baseY = 1050, 100
+
+    while true do
+        if AutoSystem.autoClick then
+            pcall(function()
+                local offsetX = math.random(-5,5)
+                local offsetY = math.random(-5,5)
+
+                mousemoveabs(baseX + offsetX, baseY + offsetY)
+                mouse1click()
+            end)
+        end
+        task.wait(0.05)
+    end
+end)
+
 end
