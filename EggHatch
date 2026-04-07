@@ -605,6 +605,7 @@ local clicked = false
 local started = false
 local lastCursorX = nil
 local freezeTime = 0
+local loopCount = 0
 
 -- làm tròn vị trí để tránh lệch
 local function isAtPosition()
@@ -702,6 +703,14 @@ task.spawn(function()
     end
 
     -- ✅ đã có → chơi minigame
+    loopCount += 1
+
+-- cứ mỗi ~0.5s reset nhẹ 1 lần (mobile fix)
+if loopCount > 50 then
+    loopCount = 0
+    lastCursorX = nil
+    clicked = false
+end
     local cursorX = cursor.Position.X.Scale
     cursorX = tonumber(string.format("%.4f", cursorX))
     local hitX = hit.Position.X.Scale
@@ -735,9 +744,9 @@ end
 local movingRight = cursorX > lastCursorX
 
 -- 🎯 predict click sớm
-local predictZone = THRESHOLD * 3
+local predictZone = THRESHOLD * 5
 
-if not clicked then
+if not clicked or freezeTime > 2 then
     if movingRight and cursorX < hitX and (hitX - cursorX) <= predictZone then
         clicked = true
         clickOnce()
@@ -749,7 +758,7 @@ if not clicked then
 end
 
 -- reset sau khi đi qua hit
-if diff > THRESHOLD then
+if diff > THRESHOLD * 2 then
     clicked = false
 end
 
