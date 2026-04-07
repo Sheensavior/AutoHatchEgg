@@ -685,7 +685,7 @@ RunService.RenderStepped:Connect(function()
                 end
             end)
 
-        else
+        --else
             if AutoSystem.mode == "MINIGAME" then
 
         -- 🔥 nếu hoàn thành 10/10
