@@ -653,15 +653,15 @@ local function getProgress()
     return tonumber(a), tonumber(b)
 end
 local function isStartNowVisible()
-    local gui = player.PlayerGui
-    local mg = gui:FindFirstChild("Minigames")
-    if not mg then return false end
+    local board = workspace.Game.DigCooldown.Board.SurfaceGui
+    if not board then return false end
 
-    -- ⚠️ chỉnh đúng path theo ảnh của bạn
-    local startBtn = mg:FindFirstChild("StartButton", true)
-
-    if startBtn and startBtn:IsA("TextLabel") or startBtn:IsA("TextButton") then
-        return startBtn.Text == "Start Now!"
+    for _, v in pairs(board:GetDescendants()) do
+        if v:IsA("TextLabel") or v:IsA("TextButton") then
+            if string.find(string.lower(v.Text), "start") then
+                return true
+            end
+        end
     end
 
     return false
@@ -677,7 +677,7 @@ task.spawn(function()
         if not current or not max then continue end
 
         -- ================== CẦN CHƠI MINIGAME ==================
-        if current < max then
+        if isMiniGameNeeded() then
 
             AutoSystem.mode = "MINIGAME"
             AutoSystem.autoClick = false
