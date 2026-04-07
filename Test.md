@@ -693,18 +693,40 @@ task.spawn(function()
 
         else
             if AutoSystem.mode == "MINIGAME" then
+
+        -- 🔥 nếu hoàn thành 10/10
+                if current == max then
+                    task.wait(0.3)
+
+            -- 🎯 click nhận thưởng TRƯỚC
+                    pcall(function()
+                        for i = 1,2 do
+                            mousemoveabs(581, 505)
+                            task.wait(0.05)
+                            mouse1click()
+                            task.wait(0.2)
+                        end
+                    end)
+
+                    task.wait(0.5) -- đợi UI xử lý
+                end
+
+        -- 🔥 reset trạng thái
+            clicked = false
+            started = false
+
+        -- bật lại inventory
+            pcall(function()
+            inventoryUI.Enabled = true
+            end)
+
+                waitForInventoryLoad(3)
+
+        -- 🔥 chuyển mode TRƯỚC
                 AutoSystem.mode = "EGG"
+
+        -- 🔥 bật AutoClick SAU CÙNG
                 AutoSystem.autoClick = true
-
-                clicked = false
-                started = false
-
-                -- ✅ bật lại inventory giống Rainbow
-                pcall(function()
-                inventoryUI.Enabled = true
-                end)
-
-                waitForInventoryLoad(3) -- nếu bạn có hàm này
             end
         end
     end
