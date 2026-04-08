@@ -595,50 +595,38 @@ end
 
 task.spawn(function()
     while true do
-        task.wait(10) -- 🔥 check mỗi 10s
+        task.wait(0.1)
 
         if not AutoSystem or not AutoSystem.enabled then continue end
 
-        local current, max = getProgress()
-        local startNow = isStartNow()
+        local timerText = workspace.Game.DigCooldown.Board.SurfaceGui.Timer.Text
+        local progressText = workspace.Game.DigCooldown.Board.SurfaceGui.Bar.Progress.Text
 
-        print("===== CHECK MODE =====")
-        print("Timer:", timerText.Text)
-        print("Progress:", progressText.Text)
+        local clean = string.lower(timerText):gsub("%s+", "")
 
-        -- 🔥 ƯU TIÊN 1: Start Now!
-        if startNow then
-            print("➡️ Start Now detected → MINIGAME")
+        local current, max = string.match(progressText, "(%d+)%s*/%s*(%d+)")
+        current = tonumber(current)
+        max = tonumber(max)
 
+        -- 🎯 ƯU TIÊN 1: Start now
+        if string.find(clean, "startnow") then
             AutoSystem.mode = "MINIGAME"
             AutoSystem.autoClick = false
 
-        else
-            if not current or not max then
-                print("⚠️ Không đọc được progress")
-                continue
-            end
+        -- 🎯 ƯU TIÊN 2: chưa full
+        elseif current and max and current < max then
+            AutoSystem.mode = "MINIGAME"
+            AutoSystem.autoClick = false
 
-            -- 🔥 ƯU TIÊN 2: chưa full → chơi
-            if current < max then
-                print("➡️ Progress chưa full → MINIGAME")
-
-                AutoSystem.mode = "MINIGAME"
-                AutoSystem.autoClick = false
-
-            else
-                -- 🔥 full rồi → quay về farm
-                print("➡️ 10/10 → về EGG/GOLDEN")
-
-                if AutoSystem.mode == "MINIGAME" then
-                    AutoSystem.mode = "EGG"
-                    AutoSystem.autoClick = true
-                end
+        -- 🎯 ƯU TIÊN 3: full → farm
+        elseif current and max and current == max then
+            if AutoSystem.mode == "MINIGAME" then
+                AutoSystem.mode = "EGG"
+                AutoSystem.autoClick = true
             end
         end
     end
 end)
-
 -- ================== SMART MINIGAME SYSTEM ==================
 
 local TARGET_POS = Vector3.new(92.8, 3508.5, 378)
@@ -820,7 +808,7 @@ lastCursorX = cursorX
             if AutoSystem.mode == "MINIGAME" then
 
         -- 🔥 nếu hoàn thành 10/10
-                if current == max and not shouldPlayMiniGame() then
+                if current == max and AutoSystem.mode == "MINIGAME" then
                     task.wait(0.3)
 
             -- 🎯 click nhận thưởng TRƯỚC
