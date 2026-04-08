@@ -596,8 +596,16 @@ local function getProgress()
 end
 
 local function isStartNow()
-    local text = (timerText.Text or ""):lower()
-    return string.find(text, "start now") ~= nil
+    if not timerText or not timerText.Text then return false end
+
+    local text = timerText.Text
+    text = string.lower(text)
+    text = text:gsub("%s+", "") -- xoá toàn bộ khoảng trắng
+
+    print("Timer RAW:", timerText.Text)
+    print("Timer CLEAN:", text)
+
+    return string.find(text, "startnow") ~= nil
 end
 
 task.spawn(function()
@@ -709,7 +717,9 @@ end
 task.spawn(function()
     while true do
         task.wait(0.01)
-
+        if AutoSystem.mode ~= "MINIGAME" then
+            continue
+        end
         if not AutoSystem.enabled then continue end
 
         local current, max = getProgress()
@@ -833,7 +843,7 @@ lastCursorX = cursorX
             if AutoSystem.mode == "MINIGAME" then
 
         -- 🔥 nếu hoàn thành 10/10
-                if current == max then
+                if current == max and AutoSystem.mode == "MINIGAME" then
                     task.wait(0.3)
 
             -- 🎯 click nhận thưởng TRƯỚC
