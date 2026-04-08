@@ -684,6 +684,12 @@ local function getProgress()
     local a, b = string.match(text, "(%d+)%s*/%s*(%d+)")
     return tonumber(a), tonumber(b)
 end
+local function shouldPlayMiniGame()
+    local current, max = getProgress()
+    if not current or not max then return false end
+
+    return current < max
+end
 -- ================== MAIN MINIGAME LOOP ==================
 task.spawn(function()
     while true do
@@ -697,7 +703,7 @@ task.spawn(function()
         if not current or not max then continue end
 
         -- ================== CẦN CHƠI MINIGAME ==================
-        if shouldPlayMiniGame() then
+        if current < max then
 
             AutoSystem.mode = "MINIGAME"
             AutoSystem.autoClick = false
