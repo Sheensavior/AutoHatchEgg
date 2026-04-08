@@ -584,29 +584,68 @@ local function clickOnce()
     end)
 end
 
--- ================== AUTO MODE SWITCH ==================
+-- ================== SMART MODE SWITCH (FIX LOGIC) ==================
+
+local timerText = workspace.Game.DigCooldown.Board.SurfaceGui.Timer
+local progressText = workspace.Game.DigCooldown.Board.SurfaceGui.Bar.Progress
+
+local function getProgress()
+    local text = progressText.Text or ""
+    local a, b = string.match(text, "(%d+)%s*/%s*(%d+)")
+    return tonumber(a), tonumber(b)
+end
+
+local function isStartNow()
+    local text = (timerText.Text or ""):lower()
+    return string.find(text, "start now") ~= nil
+end
+
 task.spawn(function()
     while true do
-        if AutoSystem and AutoSystem.enabled then
-            
-            if isMiniGameNeeded() then
+        task.wait(10) -- 🔥 check mỗi 10s
+
+        if not AutoSystem or not AutoSystem.enabled then continue end
+
+        local current, max = getProgress()
+        local startNow = isStartNow()
+
+        print("===== CHECK MODE =====")
+        print("Timer:", timerText.Text)
+        print("Progress:", progressText.Text)
+
+        -- 🔥 ƯU TIÊN 1: Start Now!
+        if startNow then
+            print("➡️ Start Now detected → MINIGAME")
+
+            AutoSystem.mode = "MINIGAME"
+            AutoSystem.autoClick = false
+
+        else
+            if not current or not max then
+                print("⚠️ Không đọc được progress")
+                continue
+            end
+
+            -- 🔥 ƯU TIÊN 2: chưa full → chơi
+            if current < max then
+                print("➡️ Progress chưa full → MINIGAME")
+
                 AutoSystem.mode = "MINIGAME"
                 AutoSystem.autoClick = false
+
             else
+                -- 🔥 full rồi → quay về farm
+                print("➡️ 10/10 → về EGG/GOLDEN")
+
                 if AutoSystem.mode == "MINIGAME" then
                     AutoSystem.mode = "EGG"
                     AutoSystem.autoClick = true
-                    clicked = false
-                    teleported = false
                 end
             end
-
         end
-        task.wait(0.2)
     end
 end)
 
--- ================== AUTO MINIGAME ==================
 -- ================== SMART MINIGAME SYSTEM ==================
 
 local TARGET_POS = Vector3.new(92.8, 3508.5, 378)
