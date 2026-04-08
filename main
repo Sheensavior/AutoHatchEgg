@@ -495,6 +495,7 @@ task.spawn(function()
     local gui = workspace.Game.DigCooldown.Board.SurfaceGui
     local timeText = gui.Timer
     local progressText = gui.Bar.Progress
+    local inventoryHidden = false
 
     local cursor = player.PlayerGui.Minigames.Main.Cursor
     local hit = player.PlayerGui.Minigames.Main.CanvasGroup.Hit
@@ -575,6 +576,18 @@ task.spawn(function()
 
             -- chạy logic mini game
             if isAtTarget() then
+                    if not inventoryHidden then
+                        inventoryHidden = true
+                        setInventory(false)
+                    end
+
+            local cursorCenter = cursor.AbsolutePosition.X + cursor.AbsoluteSize.X / 2
+            local hitMin = hit.AbsolutePosition.X
+            local hitMax = hitMin + hit.AbsoluteSize.X
+
+            if cursorCenter >= hitMin and cursorCenter <= hitMax then
+                clickDig()
+            end
                 local cursorCenter = cursor.AbsolutePosition.X + cursor.AbsoluteSize.X / 2
                 local hitMin = hit.AbsolutePosition.X
                 local hitMax = hitMin + hit.AbsoluteSize.X
