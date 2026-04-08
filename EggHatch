@@ -562,22 +562,33 @@ end
 local function isMiniGameNeeded()
     local current, max = getProgress()
 
-    local startNow = isStartNowVisible()
+    if not current or not max then
+        print("❌ Không đọc được progress")
+        return false
+    end
 
-    print("DEBUG:", current, "/", max, "| Start:", startNow)
-
-    if not current or not max then return false end
+    print("📊 Progress:", current.."/"..max)
 
     -- chưa full
     if current < max then
+        print("✅ Chưa full → chạy minigame")
         return true
     end
 
-    -- full nhưng có Start now
-    if current == max and startNow then
-        return true
+    -- đã full → check Start Now
+    if current == max then
+        local startVisible = isStartNowVisible()
+        print("🔍 StartNowVisible:", startVisible)
+
+        if startVisible then
+            print("🔥 10/10 + Start Now → CHẠY")
+            return true
+        else
+            print("⛔ 10/10 nhưng KHÔNG thấy Start Now")
+        end
     end
 
+    print("❌ Không cần minigame")
     return false
 end
 
@@ -658,17 +669,27 @@ local function getProgress()
     return tonumber(a), tonumber(b)
 end
 local function isStartNowVisible()
-    local timer = workspace:FindFirstChild("Game")
-        and workspace.Game:FindFirstChild("DigCooldown")
-        and workspace.Game.DigCooldown:FindFirstChild("Board")
-        and workspace.Game.DigCooldown.Board:FindFirstChild("SurfaceGui")
-        and workspace.Game.DigCooldown.Board.SurfaceGui:FindFirstChild("Timer")
+    local timer = workspace.Game.DigCooldown.Board.SurfaceGui:FindFirstChild("Timer")
 
-    if not timer then return false end
+    if not timer then
+        print("❌ Không tìm thấy Timer")
+        return false
+    end
 
-    local text = timer.Text or ""
+    if not (timer:IsA("TextLabel") or timer:IsA("TextButton")) then
+        print("❌ Timer không phải TextLabel/TextButton")
+        return false
+    end
 
-    return string.lower(text) == "start now!"
+    print("📝 Timer text:", timer.Text)
+
+    if string.find(string.lower(timer.Text), "start") then
+        print("✅ PHÁT HIỆN Start Now")
+        return true
+    end
+
+    print("⛔ Không phải Start Now")
+    return false
 end
 -- ================== MAIN MINIGAME LOOP ==================
 task.spawn(function()
@@ -679,7 +700,7 @@ task.spawn(function()
 
         local current, max = getProgress()
         if not current or not max then continue end
-
+        print("🔁 Checking minigame condition...")
         -- ================== CẦN CHƠI MINIGAME ==================
         if isMiniGameNeeded() then
 
