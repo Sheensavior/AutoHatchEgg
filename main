@@ -51,6 +51,7 @@ local AutoSystem = {
     mode = "EGG",
     isRainbowRunning = false,
     autoClick = true
+    miniGame = false
 }
 
 -- ================== SAVE ==================
@@ -487,10 +488,132 @@ task.spawn(function()
         end
     end
 end)
+-- ================== AUTO MINI GAME ==================
+task.spawn(function()
+
+    local gui = workspace.Game.DigCooldown.Board.SurfaceGui
+    local timeText = gui.Timer
+    local progressText = gui.Bar.Progress
+
+    local cursor = player.PlayerGui.Minigames.Main.Cursor
+    local hit = player.PlayerGui.Minigames.Main.CanvasGroup.Hit
+
+    local targetPos = Vector3.new(92.8, 3508.5, 378)
+
+    local claimed = false
+
+    local function round(n)
+        return math.floor(n + 0.5)
+    end
+
+    local function isAtTarget()
+        local char = player.Character
+        if not char then return false end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return false end
+
+        local pos = hrp.Position
+        return round(pos.X) == round(targetPos.X)
+            and round(pos.Y) == round(targetPos.Y)
+            and round(pos.Z) == round(targetPos.Z)
+    end
+
+    local function clickDig()
+        pcall(function()
+            mousemoveabs(1050,100)
+            mouse1click()
+        end)
+    end
+
+    local function clickClaim()
+        pcall(function()
+            mousemoveabs(565,599)
+            mouse1click()
+        end)
+    end
+
+    while true do
+        task.wait(0.1) -- 🔥 theo đúng yêu cầu của bạn
+
+        local timeValue = timeText.Text
+        local progressValue = progressText.Text
+
+        local isStart = timeValue and timeValue:lower():find("start")
+
+        local current, max = progressValue:match("(%d+)%s*/%s*(%d+)")
+        current = tonumber(current)
+        max = tonumber(max)
+
+        -- =========================
+        -- 🧠 LOGIC GỐC (GIỮ NGUYÊN)
+        -- =========================
+        local shouldAuto = false
+
+        if isStart then
+            shouldAuto = true
+        else
+            if current and max and current >= max then
+                shouldAuto = false
+            else
+                shouldAuto = true
+            end
+        end
+
+        -- =========================
+        -- 🔥 ENTER MINI GAME MODE
+        -- =========================
+        if shouldAuto then
+            if not AutoSystem.miniGame then
+                AutoSystem.miniGame = true
+                AutoSystem.autoClick = false
+
+                print("🎮 Auto Mode Mini Game")
+            end
+
+            claimed = false
+
+            -- chạy logic mini game
+            if isAtTarget() then
+                local cursorCenter = cursor.AbsolutePosition.X + cursor.AbsoluteSize.X / 2
+                local hitMin = hit.AbsolutePosition.X
+                local hitMax = hitMin + hit.AbsoluteSize.X
+
+                if cursorCenter >= hitMin and cursorCenter <= hitMax then
+                    clickDig()
+                end
+            else
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = CFrame.new(targetPos)
+                end
+            end
+
+        else
+            -- =========================
+            -- 🔴 EXIT MINI GAME MODE
+            -- =========================
+            if AutoSystem.miniGame then
+
+                -- claim đúng 1 lần
+                if (not isStart) and current and max and current >= max and not claimed then
+                    claimed = true
+                    task.wait(0.2)
+                    clickClaim()
+                    print("🎁 Claim thưởng")
+                end
+
+                AutoSystem.miniGame = false
+                AutoSystem.autoClick = true
+
+                print("⛔ Dừng Auto Mini Game")
+            end
+        end
+    end
+end)
 -- ================== MAIN LOOP ==================
 task.spawn(function()
     while true do
-        if AutoSystem.enabled and not AutoSystem.isRainbowRunning then
+        if AutoSystem.enabled and not AutoSystem.isRainbowRunning and not AutoSystem.miniGame then
             local ids = getPets()
 
             if AutoSystem.mode == "EGG" then
