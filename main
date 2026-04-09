@@ -55,6 +55,32 @@ local AutoSystem = {
     miniGame = false
 }
 
+-- ================== MODE QUEUE ==================
+local ModeQueue = {}
+local CurrentMode = "EGG"
+
+local function requestMode(mode)
+    -- tránh spam trùng
+    if CurrentMode == mode then return end
+
+    for _, m in pairs(ModeQueue) do
+        if m == mode then return end
+    end
+
+    table.insert(ModeQueue, mode)
+    print("📥 Queue:", mode)
+end
+
+local function getNextMode()
+    if #ModeQueue == 0 then
+        return "EGG"
+    end
+
+    local nextMode = table.remove(ModeQueue, 1)
+    print("📤 Run:", nextMode)
+    return nextMode
+end
+
 -- ================== SAVE ==================
 local fileName = "auto_system.json"
 
@@ -404,71 +430,7 @@ end)
 
 -- ================== AUTO RAINBOW ==================
 rainbowBtn.MouseButton1Click:Connect(function()
-    if AutoSystem.isRainbowRunning then return end
-
-    AutoSystem.isRainbowRunning = true
-    updateUI()
-
-    task.spawn(function()
-        setInventory(true)
-        waitForInventoryLoad(6)
-
-        while true do
-            local golden = getGoldenPets()
-            if #golden < 5 then break end
-
-            tp(POSITIONS.RAINBOW)
-            task.wait(1.5)
-
-            setInventory(false)
-            task.wait(0.5)
-            setInventory(true)
-            waitForInventoryLoad(3)
-
-            local queue = {}
-            local index = 1
-
-            for slot = 1,3 do
-                if golden[index+4] then
-                    local ids = {
-                        golden[index],
-                        golden[index+1],
-                        golden[index+2],
-                        golden[index+3],
-                        golden[index+4]
-                    }
-
-                    startRainbow:InvokeServer(ids)
-                    table.insert(queue, ids[1])
-
-                    index += 5
-                    task.wait(1)
-                end
-            end
-
-            task.wait(30)
-
-            setInventory(false)
-
-            for _, id in pairs(queue) do
-                claimRainbow:InvokeServer(id)
-                task.wait(1)
-            end
-
-            setInventory(true)
-            waitForInventoryLoad(3)
-
-            task.wait(2)
-        end
-
-        setInventory(false)
-
-        AutoSystem.isRainbowRunning = false
-        AutoSystem.mode = "EGG"
-        setInventory(true)
-        waitForInventoryLoad(3)
-        updateUI()
-    end)
+    requestMode("RAINBOW")
 end)
 -- ================== AUTO INVENTORY LOOP ==================
 task.spawn(function()
@@ -565,29 +527,74 @@ task.spawn(function()
         -- 🔥 ENTER MINI GAME MODE
         -- =========================
         if shouldAuto then
-            if not AutoSystem.miniGame then
-                AutoSystem.miniGame = true
-                AutoSystem.autoClick = false
+            requestMode("MINIGAME")
+        end
+    end
+end)
+-- ================== MINI GAME RUNNER ==================
+local function runMiniGame()
 
-                print("🎮 Auto Mode Mini Game")
-            end
+    AutoSystem.autoClick = false
 
-            claimed = false
+    local gui = workspace.Game.DigCooldown.Board.SurfaceGui
+    local timeText = gui.Timer
+    local progressText = gui.Bar.Progress
 
-            -- chạy logic mini game
+    local cursor = player.PlayerGui.Minigames.Main.Cursor
+    local hit = player.PlayerGui.Minigames.Main.CanvasGroup.Hit
+
+    local targetPos = Vector3.new(92.8, 3508.5, 378)
+
+    local function round(n)
+        return math.floor(n + 0.5)
+    end
+
+    local function isAtTarget()
+        local char = player.Character
+        if not char then return false end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return false end
+
+        local pos = hrp.Position
+        return round(pos.X) == round(targetPos.X)
+            and round(pos.Y) == round(targetPos.Y)
+            and round(pos.Z) == round(targetPos.Z)
+    end
+
+    local function clickDig()
+        pcall(function()
+            mousemoveabs(1050,100)
+            mouse1click()
+        end)
+    end
+
+    local function clickClaim()
+        pcall(function()
+            mousemoveabs(565,599)
+            mouse1click()
+        end)
+    end
+
+    local claimed = false
+
+    while true do
+        task.wait(0.1)
+
+        local timeValue = timeText.Text
+        local progressValue = progressText.Text
+
+        local isStart = timeValue and timeValue:lower():find("start")
+
+        local current, max = progressValue:match("(%d+)%s*/%s*(%d+)")
+        current = tonumber(current)
+        max = tonumber(max)
+
+        if isStart or (current and max and current < max) then
+
             if isAtTarget() then
-                    if not inventoryHidden then
-                        inventoryHidden = true
-                        setInventory(false)
-                    end
 
-            local cursorCenter = cursor.AbsolutePosition.X + cursor.AbsoluteSize.X / 2
-            local hitMin = hit.AbsolutePosition.X
-            local hitMax = hitMin + hit.AbsoluteSize.X
+                setInventory(false)
 
-            if cursorCenter >= hitMin and cursorCenter <= hitMax then
-                clickDig()
-            end
                 local cursorCenter = cursor.AbsolutePosition.X + cursor.AbsoluteSize.X / 2
                 local hitMin = hit.AbsolutePosition.X
                 local hitMax = hitMin + hit.AbsoluteSize.X
@@ -595,6 +602,7 @@ task.spawn(function()
                 if cursorCenter >= hitMin and cursorCenter <= hitMax then
                     clickDig()
                 end
+
             else
                 local char = player.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
@@ -603,53 +611,97 @@ task.spawn(function()
             end
 
         else
-            -- =========================
-            -- 🔴 EXIT MINI GAME MODE
-            -- =========================
-            if AutoSystem.miniGame then
-
-                -- claim đúng 1 lần
-                if (not isStart) and current and max and current >= max and not claimed then
-                    claimed = true
-                    task.wait(0.2)
-                    clickClaim()
-                    print("🎁 Claim thưởng")
-                end
-
-                AutoSystem.miniGame = false
-                AutoSystem.autoClick = true
-
-                print("⛔ Dừng Auto Mini Game")
+            if not claimed and current and max and current >= max then
+                claimed = true
+                task.wait(0.2)
+                clickClaim()
             end
+
+            break
         end
     end
-end)
+
+    AutoSystem.autoClick = true
+end
+
+-- ================== RAINBOW RUNNER ==================
+
+local function runRainbow()
+
+    setInventory(true)
+    waitForInventoryLoad(6)
+
+    while true do
+        local golden = getGoldenPets()
+        if #golden < 5 then break end
+
+        tp(POSITIONS.RAINBOW)
+        task.wait(1.5)
+
+        setInventory(false)
+        task.wait(0.5)
+        setInventory(true)
+        waitForInventoryLoad(3)
+
+        local ids = {
+            golden[1], golden[2], golden[3],
+            golden[4], golden[5]
+        }
+
+        startRainbow:InvokeServer(ids)
+        task.wait(30)
+
+        claimRainbow:InvokeServer(ids[1])
+        task.wait(1)
+    end
+
+    setInventory(false)
+end
+
 -- ================== MAIN LOOP ==================
 task.spawn(function()
     while true do
-        if AutoSystem.enabled and not AutoSystem.isRainbowRunning and not AutoSystem.miniGame then
-            local ids = getPets()
 
-            if AutoSystem.mode == "EGG" then
-                tp(POSITIONS.EGG)
+        if CurrentMode == "EGG" then
+            CurrentMode = getNextMode()
+        end
 
-                if #ids >= 6 then
-                    AutoSystem.mode = "GOLDEN"
-                elseif hatchFolder then
-                    hatchFolder.Functions.OpenEgg:InvokeServer("Spring Blossom", AutoSystem.eggAmount)
+        if CurrentMode == "MINIGAME" then
+            runMiniGame()
+            CurrentMode = "EGG"
+
+        elseif CurrentMode == "RAINBOW" then
+            runRainbow()
+            CurrentMode = "EGG"
+
+        elseif CurrentMode == "EGG" then
+
+            if AutoSystem.enabled then
+
+                local ids = getPets()
+
+                if AutoSystem.mode == "EGG" then
+                    tp(POSITIONS.EGG)
+
+                    if #ids >= 6 then
+                        AutoSystem.mode = "GOLDEN"
+                    elseif hatchFolder then
+                        hatchFolder.Functions.OpenEgg:InvokeServer("Spring Blossom", AutoSystem.eggAmount)
+                    end
+
+                elseif AutoSystem.mode == "GOLDEN" then
+                    tp(POSITIONS.GOLDEN)
+
+                    if #ids >= 6 and craftRemote then
+                        craftRemote:InvokeServer({
+                            ids[1], ids[2], ids[3],
+                            ids[4], ids[5], ids[6]
+                        })
+                    else
+                        AutoSystem.mode = "EGG"
+                    end
                 end
 
-            elseif AutoSystem.mode == "GOLDEN" then
-                tp(POSITIONS.GOLDEN)
-
-                if #ids >= 6 and craftRemote then
-                    craftRemote:InvokeServer({
-                        ids[1], ids[2], ids[3],
-                        ids[4], ids[5], ids[6]
-                    })
-                else
-                    AutoSystem.mode = "EGG"
-                end
             end
         end
 
