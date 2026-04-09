@@ -236,29 +236,52 @@ local function buyPotion(amount)
         :InvokeServer(amount)
 end
 
-local function handlePotion(slot)
-    local path = player.PlayerGui.Tabs.PotionMachine.Menu.BuyOptions["Buy"..slot].Main.Cooldown
-    local text = path.Text
+local function handlePotion(slot, text)
 
+    print("🧪 HANDLE SLOT", slot, "| TEXT:", text)
+
+    local path = player.PlayerGui.Tabs.PotionMachine.Menu.BuyOptions["Buy"..slot].Main.Cooldown
+
+    -- ================= READY =================
     if text:find(":") or text == "0h 0m 0s" then
 
+        print("✅ BUY:", slot)
         buyPotion(slot)
 
+        -- 🔥 ĐỢI UI UPDATE SAU KHI MUA
         local newText = text
-        local timeout = tick() + 5
+        local timeout = tick() + 6
 
         repeat
             task.wait(0.2)
             newText = path.Text
         until (not newText:find(":")) and newText ~= "0h 0m 0s" or tick() > timeout
 
+        print("📥 NEW TEXT:", newText)
+
         local seconds = hmsToSeconds(newText)
+
+        if seconds <= 0 then
+            warn("❌ Parse lỗi:", newText)
+            seconds = 10
+        end
+
         nextBuyTime[slot] = os.time() + seconds
+        print("⏳ NEXT BUY", slot, "in", seconds, "s")
 
     else
+        -- ================= COOLDOWN =================
         local seconds = hmsToSeconds(text)
+
+        if seconds <= 0 then
+            warn("❌ Parse lỗi:", text)
+            seconds = 10
+        end
+
         nextBuyTime[slot] = os.time() + seconds
+        print("⏳ WAIT", slot, seconds, "s")
     end
+
 end
 
 -- ================== TRADE ==================
@@ -603,12 +626,16 @@ task.spawn(function()
     while true do
         local now = os.time()
 
+       local potionQueued = false
+
         for _, slot in pairs({1,3,10}) do
-            if now >= nextBuyTime[slot] then
-                requestMode("POTION")
-                break
-            end
+        if os.time() >= nextBuyTime[slot] then
+            if not potionQueued then
+            requestMode("POTION")
+            potionQueued = true
         end
+    end
+end
 
         task.wait(5) -- check nhẹ thôi (KHÔNG spam)
     end
@@ -747,10 +774,36 @@ local function runPotion()
     print("🧪 Run Potion Mode")
 
     teleportToPotion()
-    task.wait(1.5)
+
+    -- 🔥 ĐỢI UI LOAD THẬT SỰ
+    local potionMenu = player.PlayerGui:WaitForChild("Tabs")
+        :WaitForChild("PotionMachine")
+        :WaitForChild("Menu")
+
+    -- đợi UI ổn định
+    task.wait(2.5)
+
+    -- 🔥 BƯỚC 1: ĐỌC TOÀN BỘ TEXT TRƯỚC
+    local texts = {}
 
     for _, slot in pairs({1,3,10}) do
-        handlePotion(slot)
+        local success, path = pcall(function()
+            return potionMenu.BuyOptions["Buy"..slot].Main.Cooldown
+        end)
+
+        if success and path then
+            texts[slot] = path.Text
+            print("📥 SLOT", slot, "TEXT:", texts[slot])
+        else
+            warn("❌ Không đọc được slot:", slot)
+        end
+    end
+
+    -- 🔥 BƯỚC 2: XỬ LÝ SAU KHI ĐÃ CÓ TEXT
+    for _, slot in pairs({1,3,10}) do
+        if texts[slot] then
+            handlePotion(slot, texts[slot])
+        end
     end
 
 end
