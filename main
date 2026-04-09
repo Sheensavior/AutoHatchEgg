@@ -200,6 +200,67 @@ local function tp(pos)
     end
 end
 
+-- ================== POTION SYSTEM ==================
+
+local POTION_POS = Vector3.new(-206.6, 9198.5, 159.8)
+
+local nextBuyTime = {
+    [1] = 0,
+    [3] = 0,
+    [10] = 0
+}
+
+local function teleportToPotion()
+    tp(POTION_POS)
+end
+
+local function hmsToSeconds(str)
+    local total = 0
+
+    local h = str:match("(%d+)h")
+    local m = str:match("(%d+)m")
+    local s = str:match("(%d+)s")
+
+    if h then total += tonumber(h) * 3600 end
+    if m then total += tonumber(m) * 60 end
+    if s then total += tonumber(s) end
+
+    return total
+end
+
+local function buyPotion(amount)
+    game:GetService("ReplicatedStorage")
+        :WaitForChild(game.JobId)
+        :WaitForChild("Functions")
+        :WaitForChild("BuyPotionMachine")
+        :InvokeServer(amount)
+end
+
+local function handlePotion(slot)
+    local path = player.PlayerGui.Tabs.PotionMachine.Menu.BuyOptions["Buy"..slot].Main.Cooldown
+    local text = path.Text
+
+    if text:find(":") or text == "0h 0m 0s" then
+
+        buyPotion(slot)
+
+        local newText = text
+        local timeout = tick() + 5
+
+        repeat
+            task.wait(0.2)
+            newText = path.Text
+        until (not newText:find(":")) and newText ~= "0h 0m 0s" or tick() > timeout
+
+        local seconds = hmsToSeconds(newText)
+        nextBuyTime[slot] = os.time() + seconds
+
+    else
+        local seconds = hmsToSeconds(text)
+        nextBuyTime[slot] = os.time() + seconds
+    end
+end
+
 -- ================== TRADE ==================
 local IDServer = nil
 for _, v in pairs(rs:GetChildren()) do
@@ -531,6 +592,29 @@ task.spawn(function()
         end
     end
 end)
+
+-- ================== AUTO POTION SCHEDULER ==================
+task.spawn(function()
+
+    -- 🔥 chạy 1 lần khi start
+    task.wait(5)
+    requestMode("POTION")
+
+    while true do
+        local now = os.time()
+
+        for _, slot in pairs({1,3,10}) do
+            if now >= nextBuyTime[slot] then
+                requestMode("POTION")
+                break
+            end
+        end
+
+        task.wait(5) -- check nhẹ thôi (KHÔNG spam)
+    end
+
+end)
+
 -- ================== MINI GAME RUNNER ==================
 local function runMiniGame()
 
@@ -657,6 +741,19 @@ local function runRainbow()
 
     setInventory(false)
 end
+-- ================== POTION RUNNER ==================
+local function runPotion()
+
+    print("🧪 Run Potion Mode")
+
+    teleportToPotion()
+    task.wait(1.5)
+
+    for _, slot in pairs({1,3,10}) do
+        handlePotion(slot)
+    end
+
+end
 
 -- ================== MAIN LOOP ==================
 task.spawn(function()
@@ -665,8 +762,11 @@ task.spawn(function()
         if CurrentMode == "EGG" then
             CurrentMode = getNextMode()
         end
+        if CurrentMode == "POTION" then
+            runPotion()
+            CurrentMode = "EGG"
 
-        if CurrentMode == "MINIGAME" then
+        elseif CurrentMode == "MINIGAME" then
             runMiniGame()
             CurrentMode = "EGG"
 
