@@ -52,7 +52,11 @@ local AutoSystem = {
     isRainbowRunning = false,
     autoClick = true
 }
-
+local PotionTimer = {
+    p1 = 0,
+    p3 = 0,
+    p10 = 0
+}
 -- ================== SAVE ==================
 local fileName = "auto_system.json"
 
@@ -346,6 +350,35 @@ tradeBtn.BackgroundColor3 = Color3.fromRGB(200,120,0)
 tradeBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", tradeBtn)
 
+local potionLabel = Instance.new("TextLabel", content)
+potionLabel.Size = UDim2.new(1,-20,0,80)
+potionLabel.Position = UDim2.new(0,10,0,400)
+potionLabel.BackgroundTransparency = 1
+potionLabel.TextColor3 = Color3.new(1,1,1)
+potionLabel.Font = Enum.Font.GothamBold
+potionLabel.TextSize = 16
+potionLabel.TextYAlignment = Enum.TextYAlignment.Top
+
+local testPotionBtn = Instance.new("TextButton", content)
+testPotionBtn.Size = UDim2.new(1,-20,0,40)
+testPotionBtn.Position = UDim2.new(0,10,0,440)
+testPotionBtn.Text = "TEST POTION"
+
+testPotionBtn.MouseButton1Click:Connect(function()
+    PotionTimer.p1 = tick() + 60
+    PotionTimer.p3 = tick() + 120
+    PotionTimer.p10 = tick() + 180
+end)
+
+local function formatTime(t)
+    if t <= 0 then return "READY" end
+
+    local m = math.floor(t / 60)
+    local s = math.floor(t % 60)
+
+    return string.format("%02d:%02d", m, s)
+end
+
 -- MINIMIZE
 local minimized = false
 minimize.MouseButton1Click:Connect(function()
@@ -372,6 +405,39 @@ local function updateUI()
 end
 
 updateUI()
+task.spawn(function()
+    while true do
+        -- TOGGLE
+        toggle.Text = AutoSystem.enabled and "ON" or "OFF"
+        toggle.BackgroundColor3 = AutoSystem.enabled and Color3.fromRGB(0,170,100) or Color3.fromRGB(170,0,0)
+
+        -- AUTO CLICK
+        autoClickBtn.Text = AutoSystem.autoClick and "AUTO CLICK: ON" or "AUTO CLICK: OFF"
+        autoClickBtn.BackgroundColor3 = AutoSystem.autoClick and Color3.fromRGB(0,170,100) or Color3.fromRGB(170,0,0)
+
+        -- MODE REALTIME
+        if AutoSystem.isRainbowRunning then
+            modeLabel.Text = "Mode: RAINBOW"
+        else
+            modeLabel.Text = "Mode: " .. AutoSystem.mode
+        end
+
+        -- INPUT
+        input.Text = tostring(AutoSystem.eggAmount)
+        local now = tick()
+
+        local t1 = PotionTimer.p1 - now
+        local t3 = PotionTimer.p3 - now
+        local t10 = PotionTimer.p10 - now
+
+        potionLabel.Text =
+        "Potion 1: " .. formatTime(t1) .. "\n" ..
+        "Potion 3: " .. formatTime(t3) .. "\n" ..
+        "Potion 10: " .. formatTime(t10)
+
+        task.wait(0.2)
+    end
+end)
 
 autoClickBtn.MouseButton1Click:Connect(function()
     AutoSystem.autoClick = not AutoSystem.autoClick
