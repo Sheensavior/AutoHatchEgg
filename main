@@ -213,7 +213,13 @@ local nextBuyTime = {
 local function teleportToPotion()
     tp(POTION_POS)
 end
+local function isCooldownRunning(label)
+    local t1 = label.Text
+    task.wait(1)
+    local t2 = label.Text
 
+    return t1 ~= t2
+end
 local function hmsToSeconds(str)
     local total = 0
 
@@ -237,51 +243,30 @@ local function buyPotion(amount)
 end
 
 local function handlePotion(slot, text)
+    local label = player.PlayerGui.Tabs.PotionMachine.Menu.BuyOptions["Buy"..slot].Main.Cooldown
 
-    print("🧪 HANDLE SLOT", slot, "| TEXT:", text)
+    if not isCooldownRunning(label) then
+        print("✅ SLOT "..slot.." READY -> BUY")
 
-    local path = player.PlayerGui.Tabs.PotionMachine.Menu.BuyOptions["Buy"..slot].Main.Cooldown
-
-    -- ================= READY =================
-    if text:find(":") or text == "0h 0m 0s" then
-
-        print("✅ BUY:", slot)
         buyPotion(slot)
 
-        -- 🔥 ĐỢI UI UPDATE SAU KHI MUA
-        local newText = text
-        local timeout = tick() + 6
-
+        -- đợi UI đổi sang cooldown mới
+        local timeout = tick() + 5
         repeat
             task.wait(0.2)
-            newText = path.Text
-        until (not newText:find(":")) and newText ~= "0h 0m 0s" or tick() > timeout
+        until isCooldownRunning(label) or tick() > timeout
 
-        print("📥 NEW TEXT:", newText)
-
-        local seconds = hmsToSeconds(newText)
-
-        if seconds <= 0 then
-            warn("❌ Parse lỗi:", newText)
-            seconds = 10
-        end
-
-        nextBuyTime[slot] = os.time() + seconds
-        print("⏳ NEXT BUY", slot, "in", seconds, "s")
-
-    else
-        -- ================= COOLDOWN =================
+        local text = text or label.Text
         local seconds = hmsToSeconds(text)
 
-        if seconds <= 0 then
-            warn("❌ Parse lỗi:", text)
-            seconds = 10
-        end
+        nextBuyTime[slot] = os.time() + seconds
+
+    else
+        local text = label.Text
+        local seconds = hmsToSeconds(text)
 
         nextBuyTime[slot] = os.time() + seconds
-        print("⏳ WAIT", slot, seconds, "s")
     end
-
 end
 
 -- ================== TRADE ==================
