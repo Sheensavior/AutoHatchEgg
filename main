@@ -493,7 +493,9 @@ local function updateUI()
     autoClickBtn.BackgroundColor3 = AutoSystem.autoClick and Color3.fromRGB(0,170,100) or Color3.fromRGB(170,0,0)
     modeLabel.Text = "Mode: " .. CurrentMode
 
+    if not input:IsFocused() then
     input.Text = tostring(AutoSystem.eggAmount)
+    end
 end
 
 updateUI()
