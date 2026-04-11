@@ -118,6 +118,97 @@ for _, v in pairs(rs:GetChildren()) do
     end
 end
 
+-- ================== AUTO USE POTION ==================
+task.spawn(function()
+
+    local player = game.Players.LocalPlayer
+
+    local function getHolder()
+        local success, result = pcall(function()
+            return player
+                :WaitForChild("PlayerGui")
+                :WaitForChild("RightHud")
+                :WaitForChild("Main")
+                :WaitForChild("RightUI")
+                :WaitForChild("Items")
+                :WaitForChild("List")
+                :WaitForChild("Holder")
+        end)
+
+        return success and result or nil
+    end
+
+    local Keywords = { "potion", " i", " ii", " iii", "luck20" }
+    local Blacklist = { "vip", "shop", "category" }
+
+    local function matchAny(str, list)
+        for _, v in pairs(list) do
+            if string.find(str, v) then
+                return true
+            end
+        end
+        return false
+    end
+
+    local function matchPattern(str, patterns)
+        for _, p in pairs(patterns) do
+            if string.match(str, p) then
+                return true
+            end
+        end
+        return false
+    end
+
+    local function check(name)
+        local lower = string.lower(name)
+        return matchAny(lower, Keywords) and not matchPattern(lower, Blacklist)
+    end
+
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+    local function getRemote()
+        local success, result = pcall(function()
+            return ReplicatedStorage:WaitForChild(game.JobId)
+                :WaitForChild("Functions")
+                :WaitForChild("UseBoost")
+        end)
+
+        return success and result or nil
+    end
+
+    while true do
+        task.wait(600) -- 🔥 10 phút
+
+        local holder = getHolder()
+        local remote = getRemote()
+
+        if holder and remote then
+
+            local used = {}
+
+            for _, obj in pairs(holder:GetChildren()) do -- chỉ con trực tiếp
+
+                if obj:IsA("ImageButton") or obj:IsA("Frame") then
+
+                    local name = obj.Name
+
+                    if check(name) and not used[name] then
+                        used[name] = true
+
+                        pcall(function()
+                            remote:InvokeServer(name)
+                        end)
+
+                        task.wait(0.2)
+                    end
+                end
+            end
+
+        end
+    end
+
+end)
+
 -- ================== INVENTORY ==================
 local inventoryUI = player.PlayerGui
     :WaitForChild("Tabs")
