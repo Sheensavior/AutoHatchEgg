@@ -770,6 +770,24 @@ end
 
 end)
 
+-- ================== AUTO TAP LOOT SCHEDULER ==================
+task.spawn(function()
+
+    local nextTapLootTime = 0
+
+    while true do
+        local now = os.time()
+
+        if now >= nextTapLootTime then
+            requestMode("TAP_LOOT")
+            nextTapLootTime = now + 3600 -- 🔥 1 tiếng
+        end
+
+        task.wait(10) -- check nhẹ
+    end
+
+end)
+
 -- ================== MINI GAME RUNNER ==================
 local function runMiniGame()
 
@@ -861,6 +879,94 @@ local function runMiniGame()
     end
 
     AutoSystem.autoClick = true
+end
+
+-- ================== TAP LOOT RUNNER ==================
+local function runTapLoot()
+
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    local positions = {
+        Vector3.new(-248.7344, 804.0314, 329.9830),
+        Vector3.new(-209.1883, 215.5007, 195.4606),
+        Vector3.new(-249.2495, 214.1701, 336.5584),
+        Vector3.new(-98.6371, 213.2443, 240.8814),
+        Vector3.new(-41.2290, 575.1145, 300.4147),
+        Vector3.new(-96.5362, 338.0458, -114.3334),
+        Vector3.new(-151.1423, 327.7684, -91.9360),
+        Vector3.new(-212.3454, 326.0891, 347.1623),
+        Vector3.new(-73.6208, 216.1502, 355.6442),
+        Vector3.new(-154.6991, 621.6291, 322.5856),
+        Vector3.new(-44.1618, 234.4333, 235.2214),
+        Vector3.new(-275.0936, 214.4690, 211.3747),
+        Vector3.new(-135.5711, 213.2450, 109.0326),
+
+        Vector3.new(-334.9736, 2548.7141, 470.4051),
+        Vector3.new(-297.0377, 2541.3225, 367.2560),
+        Vector3.new(-280.5179, 2540.7324, 340.3887),
+        Vector3.new(-119.8564, 3500.3869, 354.9172),
+        Vector3.new(-121.1367, 3527.7402, 331.3119),
+        Vector3.new(-54.0426, 3505.7446, 490.9532),
+
+        Vector3.new(-258.1428, 4420.4306, 226.3030),
+        Vector3.new(-238.9127, 4420.9658, 325.2947),
+        Vector3.new(-423.9274, 4420.9658, 372.1702),
+        Vector3.new(-238.3386, 4420.0410, 484.5163),
+        Vector3.new(-429.6617, 4430.7207, 559.8743),
+        Vector3.new(-276.5012, 4415.3227, 411.8910),
+        Vector3.new(-418.7057, 4611.3774, 459.0183),
+
+        Vector3.new(-410.0698, 5846.5966, 242.2888),
+        Vector3.new(-275.8784, 5862.0048, 407.0947),
+        Vector3.new(-446.9025, 5912.2543, 260.9836),
+        Vector3.new(-422.4045, 5876.2553, 264.3332),
+        Vector3.new(-430.6267, 5845.6723, 323.7049),
+        Vector3.new(-130.9842, 5346.0161, 290.1303),
+
+        Vector3.new(-89.2223, 7663.1474, 289.1198),
+        Vector3.new(-188.9588, 7617.5781, 212.3634),
+        Vector3.new(-386.5301, 7574.0312, 254.2528),
+        Vector3.new(-312.5392, 7200.1557, 254.4225),
+        Vector3.new(-366.7328, 7619.0888, 425.3239),
+        Vector3.new(-392.4069, 7622.2226, 338.4860),
+
+        Vector3.new(-407.3745, 9203.6835, 196.3936),
+        Vector3.new(-108.2025, 9189.6562, 270.6198),
+        Vector3.new(-229.2857, 9189.9003, 279.2838),
+        Vector3.new(-146.3629, 9197.4501, 384.8245),
+
+        Vector3.new(-325.4507, 10954.8271, 196.9601),
+        Vector3.new(-178.1170, 10966.0224, 313.5976),
+        Vector3.new(-258.7006, 10959.2324, 394.9934),
+        Vector3.new(-179.2199, 10965.8994, 408.6047),
+
+        Vector3.new(-453.4694, 12949.8085, 231.6331),
+        Vector3.new(-345.8756, 12955.4423, 144.5984),
+        Vector3.new(-452.7530, 12948.6904, 303.3636),
+
+        Vector3.new(-58.0474, 15340.6582, 355.6352),
+        Vector3.new(-348.4605, 15325.3701, 493.3147),
+        Vector3.new(-344.6856, 15325.7011, 494.0677),
+        Vector3.new(-423.4029, 15351.9453, 278.9182),
+        Vector3.new(-399.4192, 15383.7646, 76.7127),
+        Vector3.new(-215.1872, 15389.4169, 52.6223),
+
+        Vector3.new(1467.6409, 733.2839, -13299.1708),
+        Vector3.new(1475.9447, 721.1821, -13143.1562)
+    }
+
+    for _, pos in ipairs(positions) do
+        if not AutoSystem.enabled then break end
+
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0,5,0))
+        end
+
+        task.wait(0.5)
+    end
 end
 
 -- ================== RAINBOW RUNNER ==================
@@ -955,7 +1061,9 @@ task.spawn(function()
         elseif CurrentMode == "RAINBOW" then
             runRainbow()
             CurrentMode = "EGG"
-
+        elseif CurrentMode == "TAP_LOOT" then
+            runTapLoot()
+            CurrentMode = "EGG"
         elseif CurrentMode == "EGG" then
 
             if AutoSystem.enabled then
