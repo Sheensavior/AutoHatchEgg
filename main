@@ -177,17 +177,15 @@ task.spawn(function()
     end
 
     while true do
-        task.wait(600) -- 🔥 10 phút
 
+        -- 🔥 CHẠY NGAY
         local holder = getHolder()
         local remote = getRemote()
 
         if holder and remote then
-
             local used = {}
 
-            for _, obj in pairs(holder:GetChildren()) do -- chỉ con trực tiếp
-
+            for _, obj in pairs(holder:GetChildren()) do
                 if obj:IsA("ImageButton") or obj:IsA("Frame") then
 
                     local name = obj.Name
@@ -203,8 +201,11 @@ task.spawn(function()
                     end
                 end
             end
-
         end
+
+        -- ⏱ SAU ĐÓ MỚI ĐỢI
+        task.wait(600)
+
     end
 
 end)
