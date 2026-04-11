@@ -204,7 +204,7 @@ task.spawn(function()
         end
 
         -- ⏱ SAU ĐÓ MỚI ĐỢI
-        task.wait(5)
+        task.wait(60)
 
     end
 
