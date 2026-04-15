@@ -479,13 +479,39 @@ minimize.BackgroundColor3 = Color3.fromRGB(40,40,40)
 minimize.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", minimize)
 
-local content = Instance.new("Frame", main)
-content.Size = UDim2.new(1,0,1,-40)
-content.Position = UDim2.new(0,0,0,40)
-content.BackgroundTransparency = 1
+-- ================== TAB HOLDER ==================
+local tabHolder = Instance.new("Frame", main)
+tabHolder.Size = UDim2.new(1,0,0,35)
+tabHolder.Position = UDim2.new(0,0,0,40)
+tabHolder.BackgroundTransparency = 1
+
+local autoTab = Instance.new("TextButton", tabHolder)
+autoTab.Size = UDim2.new(0.5,0,1,0)
+autoTab.Text = "AUTO"
+autoTab.BackgroundColor3 = Color3.fromRGB(0,170,100)
+autoTab.TextColor3 = Color3.new(1,1,1)
+
+local upgradeTab = Instance.new("TextButton", tabHolder)
+upgradeTab.Size = UDim2.new(0.5,0,1,0)
+upgradeTab.Position = UDim2.new(0.5,0,0,0)
+upgradeTab.Text = "UPGRADE"
+upgradeTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+upgradeTab.TextColor3 = Color3.new(1,1,1)
+
+-- ================== CONTENT ==================
+local autoFrame = Instance.new("Frame", main)
+autoFrame.Size = UDim2.new(1,0,1,-75)
+autoFrame.Position = UDim2.new(0,0,0,75)
+autoFrame.BackgroundTransparency = 1
+
+local upgradeFrame = Instance.new("Frame", main)
+upgradeFrame.Size = autoFrame.Size
+upgradeFrame.Position = autoFrame.Position
+upgradeFrame.BackgroundTransparency = 1
+upgradeFrame.Visible = false
 
 -- TOGGLE
-local toggle = Instance.new("TextButton", content)
+local toggle = Instance.new("TextButton", autoFrame)
 toggle.Size = UDim2.new(1,-20,0,50)
 toggle.Position = UDim2.new(0,10,0,60)
 toggle.Font = Enum.Font.GothamBold
@@ -494,7 +520,7 @@ toggle.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", toggle)
 
 -- AUTO CLICK TOGGLE
-local autoClickBtn = Instance.new("TextButton", content)
+local autoClickBtn = Instance.new("TextButton", autoFrame)
 autoClickBtn.Size = UDim2.new(1,-20,0,45)
 autoClickBtn.Position = UDim2.new(0,10,0,10)
 autoClickBtn.Font = Enum.Font.GothamBold
@@ -503,7 +529,7 @@ autoClickBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", autoClickBtn)
 
 -- MODE
-local modeLabel = Instance.new("TextLabel", content)
+local modeLabel = Instance.new("TextLabel", autoFrame)
 modeLabel.Size = UDim2.new(1,-20,0,30)
 modeLabel.Position = UDim2.new(0,10,0,120)
 modeLabel.BackgroundTransparency = 1
@@ -512,7 +538,7 @@ modeLabel.Font = Enum.Font.GothamBold
 modeLabel.TextSize = 18
 
 -- INPUT EGG
-local input = Instance.new("TextBox", content)
+local input = Instance.new("TextBox", autoFrame)
 input.Size = UDim2.new(1,-20,0,55)
 input.Position = UDim2.new(0,10,0,160)
 input.BackgroundColor3 = Color3.fromRGB(40,40,40)
@@ -524,7 +550,7 @@ input.ClearTextOnFocus = false
 Instance.new("UICorner", input)
 
 -- RAINBOW BUTTON
-local rainbowBtn = Instance.new("TextButton", content)
+local rainbowBtn = Instance.new("TextButton", autoFrame)
 rainbowBtn.Size = UDim2.new(1,-20,0,50)
 rainbowBtn.Position = UDim2.new(0,10,0,240)
 rainbowBtn.Text = "AUTO RAINBOW"
@@ -535,7 +561,7 @@ rainbowBtn.TextSize = 24
 Instance.new("UICorner", rainbowBtn)
 
 -- TRADE INPUT
-local tradeBox = Instance.new("TextBox", content)
+local tradeBox = Instance.new("TextBox", autoFrame)
 tradeBox.Size = UDim2.new(1,-20,0,45)
 tradeBox.Position = UDim2.new(0,10,0,300)
 tradeBox.PlaceholderText = "Số pet trade..."
@@ -546,7 +572,7 @@ tradeBox.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", tradeBox)
 
 -- TRADE BUTTON
-local tradeBtn = Instance.new("TextButton", content)
+local tradeBtn = Instance.new("TextButton", autoFrame)
 tradeBtn.Size = UDim2.new(1,-20,0,45)
 tradeBtn.Position = UDim2.new(0,10,0,350)
 tradeBtn.Text = "TRADE PET"
@@ -555,7 +581,7 @@ tradeBtn.BackgroundColor3 = Color3.fromRGB(200,120,0)
 tradeBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", tradeBtn)
 -----------------------------------------------
-local potionLabel = Instance.new("TextLabel", content)
+local potionLabel = Instance.new("TextLabel", autoFrame)
 potionLabel.Size = UDim2.new(1,-20,0,100)
 potionLabel.Position = UDim2.new(0,10,0,400)
 potionLabel.BackgroundTransparency = 1
@@ -567,6 +593,49 @@ potionLabel.Text = "Potion: loading..."
 potionLabel.TextYAlignment = Enum.TextYAlignment.Top
 potionLabel.TextWrapped = true
 
+local unlockBtn = Instance.new("TextButton", upgradeFrame)
+unlockBtn.Size = UDim2.new(1,-20,0,60)
+unlockBtn.Position = UDim2.new(0,10,0,20)
+unlockBtn.Text = "UNLOCK ALL PORTAL"
+unlockBtn.BackgroundColor3 = Color3.fromRGB(0,120,200)
+unlockBtn.TextColor3 = Color3.new(1,1,1)
+unlockBtn.Font = Enum.Font.GothamBold
+unlockBtn.TextSize = 20
+Instance.new("UICorner", unlockBtn)
+
+unlockBtn.MouseButton1Click:Connect(function()
+
+    print("🔓 Unlocking Portal...")
+
+    local portals = {
+        "Forest","Winter","Desert","Jungle",
+        "Heaven","Dojo","Volcano","Candy",
+        "Atlantis","Space"
+    }
+
+    -- teleport trước
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = CFrame.new(-154,239,370)
+    end
+
+    task.wait(1)
+
+    for _, name in ipairs(portals) do
+        pcall(function()
+            game:GetService("ReplicatedStorage")
+                :WaitForChild(game.JobId)
+                :WaitForChild("Functions")
+                :WaitForChild("BuyPortal")
+                :InvokeServer(name)
+        end)
+
+        task.wait(0.3)
+    end
+
+    print("✅ Done")
+end)
+
 
 -- MINIMIZE
 local minimized = false
@@ -575,7 +644,31 @@ minimize.MouseButton1Click:Connect(function()
     content.Visible = not minimized
     main.Size = minimized and UDim2.new(0,200,0,40) or UDim2.new(0,380,0,470)
 end)
+------------------------------------------------------
+local function switchTab(tab)
+    if tab == "AUTO" then
+        autoFrame.Visible = true
+        upgradeFrame.Visible = false
 
+        autoTab.BackgroundColor3 = Color3.fromRGB(0,170,100)
+        upgradeTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
+    elseif tab == "UPGRADE" then
+        autoFrame.Visible = false
+        upgradeFrame.Visible = true
+
+        upgradeTab.BackgroundColor3 = Color3.fromRGB(0,170,100)
+        autoTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    end
+end
+
+autoTab.MouseButton1Click:Connect(function()
+    switchTab("AUTO")
+end)
+
+upgradeTab.MouseButton1Click:Connect(function()
+    switchTab("UPGRADE")
+end)
 -- UI UPDATE
 local function updateUI()
     toggle.Text = AutoSystem.enabled and "ON" or "OFF"
