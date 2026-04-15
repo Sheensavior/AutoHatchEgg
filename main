@@ -637,15 +637,25 @@ unlockBtn.MouseButton1Click:Connect(function()
 end)
 
 -----Minimize-------------
+local minimized = false
 minimize.MouseButton1Click:Connect(function()
     minimized = not minimized
 
+    -- ẨN / HIỆN UI
     autoFrame.Visible = not minimized
-    upgradeFrame.Visible = false -- khi minimize thì tắt luôn tab kia
-
+    upgradeFrame.Visible = false
     tabHolder.Visible = not minimized
 
-    main.Size = minimized and UDim2.new(0,200,0,40) or UDim2.new(0,380,0,470)
+    -- ẨN luôn nút upgrade tab khi thu nhỏ
+    autoTab.Visible = not minimized
+    upgradeTab.Visible = not minimized
+
+    -- THU NHỎ KHUNG
+    if minimized then
+        main.Size = UDim2.new(0,200,0,40)
+    else
+        main.Size = UDim2.new(0,380,0,470)
+    end
 end)
 ------------------------------------------------------
 local function switchTab(tab)
