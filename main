@@ -443,7 +443,16 @@ end
 ---------------------------------------------------------------------
 local function runUpgradeGem()
 
-    local JobID = game.JobId -- hoặc ID bạn đã xác định đúng
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    -- 🔥 TELEPORT TRƯỚC KHI UPGRADE
+    hrp.CFrame = CFrame.new(-212, 2544, 391)
+
+    task.wait(0.5) -- đợi ổn định (rất quan trọng)
+
+    local JobID = game.JobId
 
     local remote = game:GetService("ReplicatedStorage")
         :WaitForChild(JobID)
@@ -466,12 +475,8 @@ local function runUpgradeGem()
 
         for i = 1, data.Amount do
 
-            local args = {
-                NameUpgradeGems
-            }
-
             local success, err = pcall(function()
-                remote:InvokeServer(unpack(args))
+                remote:InvokeServer(NameUpgradeGems)
             end)
 
             if not success then
