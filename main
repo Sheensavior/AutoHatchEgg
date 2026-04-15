@@ -1174,34 +1174,50 @@ end
 -- ================== UPGRADE GEM ==================
 local function runUpgradeGem()
 
-    print("💎 Run Upgrade Gem")
+    local JobID = game.JobId -- hoặc ID bạn đã xác định đúng
 
     local remote = game:GetService("ReplicatedStorage")
-        :WaitForChild(game.JobId)
+        :WaitForChild(JobID)
         :WaitForChild("Functions")
         :WaitForChild("UpgradeGemShop")
 
-    local function upgrade(name, amount)
-        for i = 1, amount do
-            local args = { name }
+    -- 📌 danh sách + số lần
+    local upgrades = {
+        {Name = "FreeAutoClicker", Amount = 1},
+        {Name = "HatchSpeed", Amount = 5},
+        {Name = "CriticalChance", Amount = 5},
+        {Name = "GoldenLuck", Amount = 6},
+        {Name = "AutoClickerSpeed", Amount = 11},
+        {Name = "ClickMultiplier", Amount = 20},
+        {Name = "Teleport", Amount = 1},
+    }
 
-            pcall(function()
+    for _, data in ipairs(upgrades) do
+        local NameUpgradeGems = data.Name
+
+        for i = 1, data.Amount do
+
+            local args = {
+                NameUpgradeGems
+            }
+
+            local success, err = pcall(function()
                 remote:InvokeServer(unpack(args))
             end)
+
+            if not success then
+                warn("❌ lỗi:", NameUpgradeGems, err)
+                break
+            end
+
+            print("⬆️", NameUpgradeGems, "(", i, "/", data.Amount, ")")
 
             task.wait(0.2)
         end
     end
 
-    -- 🔥 LIST UPGRADE
-    upgrade("FreeAutoClicker", 1)
-    upgrade("HatchSpeed", 5)
-    upgrade("CriticalChance", 5)
-    upgrade("GoldenLuck", 6)
-    upgrade("AutoClickerSpeed", 11)
-    upgrade("ClickMultiplier", 20)
+    print("✅ DONE UPGRADE GEM")
 
-    print("✅ Upgrade Done")
 end
 -- ================== MAIN LOOP ==================
 task.spawn(function()
