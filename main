@@ -580,6 +580,7 @@ tradeBtn.TextSize = 18
 tradeBtn.BackgroundColor3 = Color3.fromRGB(200,120,0)
 tradeBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", tradeBtn)
+
 -----------------------------------------------
 local potionLabel = Instance.new("TextLabel", autoFrame)
 potionLabel.Size = UDim2.new(1,-20,0,100)
@@ -592,16 +593,38 @@ potionLabel.TextXAlignment = Enum.TextXAlignment.Left
 potionLabel.Text = "Potion: loading..."
 potionLabel.TextYAlignment = Enum.TextYAlignment.Top
 potionLabel.TextWrapped = true
-
+-----------Tab Upgrade-----------------
 local unlockBtn = Instance.new("TextButton", upgradeFrame)
 unlockBtn.Size = UDim2.new(1,-20,0,60)
 unlockBtn.Position = UDim2.new(0,10,0,20)
-unlockBtn.Text = "UNLOCK ALL PORTAL"
+unlockBtn.Text = "UNLOCK ALL PORTAL World 1"
 unlockBtn.BackgroundColor3 = Color3.fromRGB(0,120,200)
 unlockBtn.TextColor3 = Color3.new(1,1,1)
 unlockBtn.Font = Enum.Font.GothamBold
 unlockBtn.TextSize = 20
 Instance.new("UICorner", unlockBtn)
+
+-- UPGRADE GEM BUTTON (TAB UPGRADE)
+local upgradeGemBtn = Instance.new("TextButton", upgradeFrame)
+upgradeGemBtn.Size = UDim2.new(1,-20,0,60)
+upgradeGemBtn.Position = UDim2.new(0,10,0,100) -- nằm dưới nút unlock
+upgradeGemBtn.Text = "UPGRADE GEM"
+upgradeGemBtn.BackgroundColor3 = Color3.fromRGB(0,150,200)
+upgradeGemBtn.TextColor3 = Color3.new(1,1,1)
+upgradeGemBtn.Font = Enum.Font.GothamBold
+upgradeGemBtn.TextSize = 20
+Instance.new("UICorner", upgradeGemBtn)
+---------------------------------------------------------------
+local upgrading = false
+
+upgradeGemBtn.MouseButton1Click:Connect(function()
+    if upgrading then return end
+    upgrading = true
+
+    runUpgradeGem()
+
+    upgrading = false
+end)
 
 unlockBtn.MouseButton1Click:Connect(function()
 
@@ -1146,6 +1169,41 @@ local function runPotion()
         end
     end
 
+end
+
+-- ================== UPGRADE GEM ==================
+local function runUpgradeGem()
+
+    print("💎 Run Upgrade Gem")
+
+    local upgrades = {
+        {"FreeAutoClicker", 1},
+        {"HatchSpeed", 5},
+        {"CriticalChance", 5},
+        {"GoldenLuck", 6},
+        {"AutoClickerSpeed", 11},
+        {"ClickMultiplier", 20}
+    }
+
+    local remote = game:GetService("ReplicatedStorage")
+        :WaitForChild(game.JobId)
+        :WaitForChild("Functions")
+        :WaitForChild("UpgradeGemShop")
+
+    for _, data in ipairs(upgrades) do
+        local name = data[1]
+        local amount = data[2]
+
+        for i = 1, amount do
+            pcall(function()
+                remote:InvokeServer(name)
+            end)
+
+            task.wait(0.2)
+        end
+    end
+
+    print("✅ Upgrade Done")
 end
 
 -- ================== MAIN LOOP ==================
