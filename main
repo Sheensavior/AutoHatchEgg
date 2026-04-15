@@ -440,6 +440,54 @@ local function tradePets(amount)
         task.wait(0.2)
     end
 end
+---------------------------------------------------------------------
+local function runUpgradeGem()
+
+    local JobID = game.JobId -- hoặc ID bạn đã xác định đúng
+
+    local remote = game:GetService("ReplicatedStorage")
+        :WaitForChild(JobID)
+        :WaitForChild("Functions")
+        :WaitForChild("UpgradeGemShop")
+
+    -- 📌 danh sách + số lần
+    local upgrades = {
+        {Name = "FreeAutoClicker", Amount = 1},
+        {Name = "HatchSpeed", Amount = 5},
+        {Name = "CriticalChance", Amount = 5},
+        {Name = "GoldenLuck", Amount = 6},
+        {Name = "AutoClickerSpeed", Amount = 11},
+        {Name = "ClickMultiplier", Amount = 20},
+        {Name = "Teleport", Amount = 1},
+    }
+
+    for _, data in ipairs(upgrades) do
+        local NameUpgradeGems = data.Name
+
+        for i = 1, data.Amount do
+
+            local args = {
+                NameUpgradeGems
+            }
+
+            local success, err = pcall(function()
+                remote:InvokeServer(unpack(args))
+            end)
+
+            if not success then
+                warn("❌ lỗi:", NameUpgradeGems, err)
+                break
+            end
+
+            print("⬆️", NameUpgradeGems, "(", i, "/", data.Amount, ")")
+
+            task.wait(0.2)
+        end
+    end
+
+    print("✅ DONE UPGRADE GEM")
+
+end
 
 -- ================== GUI ==================
 local gui = Instance.new("ScreenGui")
@@ -604,53 +652,6 @@ unlockBtn.Font = Enum.Font.GothamBold
 unlockBtn.TextSize = 20
 Instance.new("UICorner", unlockBtn)
 --------------------------------------------------
-local function runUpgradeGem()
-
-    local JobID = game.JobId -- hoặc ID bạn đã xác định đúng
-
-    local remote = game:GetService("ReplicatedStorage")
-        :WaitForChild(JobID)
-        :WaitForChild("Functions")
-        :WaitForChild("UpgradeGemShop")
-
-    -- 📌 danh sách + số lần
-    local upgrades = {
-        {Name = "FreeAutoClicker", Amount = 1},
-        {Name = "HatchSpeed", Amount = 5},
-        {Name = "CriticalChance", Amount = 5},
-        {Name = "GoldenLuck", Amount = 6},
-        {Name = "AutoClickerSpeed", Amount = 11},
-        {Name = "ClickMultiplier", Amount = 20},
-        {Name = "Teleport", Amount = 1},
-    }
-
-    for _, data in ipairs(upgrades) do
-        local NameUpgradeGems = data.Name
-
-        for i = 1, data.Amount do
-
-            local args = {
-                NameUpgradeGems
-            }
-
-            local success, err = pcall(function()
-                remote:InvokeServer(unpack(args))
-            end)
-
-            if not success then
-                warn("❌ lỗi:", NameUpgradeGems, err)
-                break
-            end
-
-            print("⬆️", NameUpgradeGems, "(", i, "/", data.Amount, ")")
-
-            task.wait(0.2)
-        end
-    end
-
-    print("✅ DONE UPGRADE GEM")
-
-end
 -- UPGRADE GEM BUTTON (TAB UPGRADE)
 local upgradeGemBtn = Instance.new("TextButton", upgradeFrame)
 upgradeGemBtn.Size = UDim2.new(1,-20,0,60)
