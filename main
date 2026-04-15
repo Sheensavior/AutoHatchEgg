@@ -1176,36 +1176,33 @@ local function runUpgradeGem()
 
     print("💎 Run Upgrade Gem")
 
-    local upgrades = {
-        {"FreeAutoClicker", 1},
-        {"HatchSpeed", 5},
-        {"CriticalChance", 5},
-        {"GoldenLuck", 6},
-        {"AutoClickerSpeed", 11},
-        {"ClickMultiplier", 20}
-    }
-
     local remote = game:GetService("ReplicatedStorage")
         :WaitForChild(game.JobId)
         :WaitForChild("Functions")
         :WaitForChild("UpgradeGemShop")
 
-    for _, data in ipairs(upgrades) do
-        local name = data[1]
-        local amount = data[2]
-
+    local function upgrade(name, amount)
         for i = 1, amount do
+            local args = { name }
+
             pcall(function()
-                remote:InvokeServer(name)
+                remote:InvokeServer(unpack(args))
             end)
 
             task.wait(0.2)
         end
     end
 
+    -- 🔥 LIST UPGRADE
+    upgrade("FreeAutoClicker", 1)
+    upgrade("HatchSpeed", 5)
+    upgrade("CriticalChance", 5)
+    upgrade("GoldenLuck", 6)
+    upgrade("AutoClickerSpeed", 11)
+    upgrade("ClickMultiplier", 20)
+
     print("✅ Upgrade Done")
 end
-
 -- ================== MAIN LOOP ==================
 task.spawn(function()
     while true do
