@@ -636,12 +636,15 @@ unlockBtn.MouseButton1Click:Connect(function()
     print("✅ Done")
 end)
 
-
--- MINIMIZE
-local minimized = false
+-----Minimize-------------
 minimize.MouseButton1Click:Connect(function()
     minimized = not minimized
-    content.Visible = not minimized
+
+    autoFrame.Visible = not minimized
+    upgradeFrame.Visible = false -- khi minimize thì tắt luôn tab kia
+
+    tabHolder.Visible = not minimized
+
     main.Size = minimized and UDim2.new(0,200,0,40) or UDim2.new(0,380,0,470)
 end)
 ------------------------------------------------------
