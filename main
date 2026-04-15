@@ -690,7 +690,6 @@ unlockBtn.MouseButton1Click:Connect(function()
         "Atlantis","Space"
     }
 
-    -- teleport trước
     local char = player.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
         char.HumanoidRootPart.CFrame = CFrame.new(-154,239,370)
@@ -698,6 +697,7 @@ unlockBtn.MouseButton1Click:Connect(function()
 
     task.wait(1)
 
+    -- 🔹 MUA PORTAL
     for _, name in ipairs(portals) do
         pcall(function()
             game:GetService("ReplicatedStorage")
@@ -708,6 +708,23 @@ unlockBtn.MouseButton1Click:Connect(function()
         end)
 
         task.wait(0.3)
+    end
+
+    -- 🔥 THÊM ĐOẠN NÀY (MUA WORLD)
+    print("🌍 Buying World...")
+
+    local success, err = pcall(function()
+        game:GetService("ReplicatedStorage")
+            :WaitForChild(game.JobId)
+            :WaitForChild("Functions")
+            :WaitForChild("BuyWorld")
+            :InvokeServer("Space")
+    end)
+
+    if not success then
+        warn("❌ BuyWorld lỗi:", err)
+    else
+        print("✅ Bought World: Space")
     end
 
     print("✅ Done")
