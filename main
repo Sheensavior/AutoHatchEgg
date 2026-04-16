@@ -52,7 +52,8 @@ local AutoSystem = {
     mode = "EGG",
     isRainbowRunning = false,
     autoClick = true,
-    miniGame = false
+    miniGame = false,
+    autoRebirthDelay = 60
 }
 
 -- ================== MODE QUEUE ==================
@@ -88,6 +89,7 @@ pcall(function()
     if isfile(fileName) then
         local data = HttpService:JSONDecode(readfile(fileName))
         AutoSystem.eggAmount = data.eggAmount or 8
+        AutoSystem.autoRebirthDelay = data.autoRebirthDelay or 60
         AutoSystem.enabled = data.enabled ~= nil and data.enabled or true
     end
 end)
@@ -95,7 +97,8 @@ end)
 local function saveData()
     writefile(fileName, HttpService:JSONEncode({
         eggAmount = AutoSystem.eggAmount,
-        enabled = AutoSystem.enabled
+        enabled = AutoSystem.enabled,
+        autoRebirthDelay = AutoSystem.autoRebirthDelay
     }))
 end
 
@@ -668,6 +671,18 @@ upgradeGemBtn.Font = Enum.Font.GothamBold
 upgradeGemBtn.TextSize = 20
 Instance.new("UICorner", upgradeGemBtn)
 ---------------------------------------------------------------
+-- AUTO REBIRTH INPUT
+local rebirthBox = Instance.new("TextBox", upgradeFrame)
+rebirthBox.Size = UDim2.new(1,-20,0,50)
+rebirthBox.Position = UDim2.new(0,10,0,180)
+rebirthBox.PlaceholderText = "Rebirth Delay (seconds)"
+rebirthBox.Text = tostring(AutoSystem.autoRebirthDelay)
+rebirthBox.TextSize = 20
+rebirthBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+rebirthBox.TextColor3 = Color3.new(1,1,1)
+rebirthBox.Font = Enum.Font.GothamBold
+Instance.new("UICorner", rebirthBox)
+---------------------------------------------------------------
 local upgrading = false
 
 upgradeGemBtn.MouseButton1Click:Connect(function()
@@ -832,7 +847,17 @@ input.FocusLost:Connect(function()
     end
     updateUI()
 end)
+------------------------------------------------
+rebirthBox.FocusLost:Connect(function()
+    local num = tonumber(rebirthBox.Text)
 
+    if num then
+        AutoSystem.autoRebirthDelay = math.clamp(num, 5, 3600) -- min 5s
+        saveData()
+    end
+
+    rebirthBox.Text = tostring(AutoSystem.autoRebirthDelay)
+end)
 -- TRADE CLICK
 tradeBtn.MouseButton1Click:Connect(function()
     local amount = tonumber(tradeBox.Text)
@@ -969,7 +994,76 @@ end
     end
 
 end)
+-------------------------------------------
+-- ================== AUTO REBIRTH ==================
+task.spawn(function()
 
+    local player = game.Players.LocalPlayer
+
+    -- UI PATH
+    local label = player.PlayerGui
+        :WaitForChild("RightHud")
+        :WaitForChild("Main")
+        :WaitForChild("RightUI")
+        :WaitForChild("Rebirths")
+        :WaitForChild("InfRebirths")
+        :WaitForChild("Main")
+        :WaitForChild("RebirthsAmount")
+        :WaitForChild("Amount")
+
+    -- PARSE
+    local suffixMultiplier = {
+        k = 1e3,
+        m = 1e6,
+        b = 1e9,
+        t = 1e12,
+        qd = 1e15,
+        qn = 1e18,
+        sx = 1e21
+    }
+
+    local function parseNumber(text)
+        text = string.lower(text)
+
+        local number, suffix = string.match(text, "([%d%.]+)%s*(%a+)")
+        if not number then return nil end
+
+        number = tonumber(number)
+        if not number then return nil end
+
+        if suffix and suffixMultiplier[suffix] then
+            return number * suffixMultiplier[suffix]
+        end
+
+        return number
+    end
+
+    while true do
+        task.wait(AutoSystem.autoRebirthDelay)
+
+        if not AutoSystem.enabled then continue end
+
+        local text = label.Text
+        local value = parseNumber(text)
+
+        if value then
+            value = math.floor(value)
+
+            print("♻️ Auto Rebirth:", value)
+
+            pcall(function()
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild(game.JobId)
+                    :WaitForChild("Functions")
+                    :WaitForChild("Rebirth")
+                    :InvokeServer(1, value)
+            end)
+        else
+            warn("❌ Rebirth parse fail:", text)
+        end
+    end
+
+end)
 -- ================== AUTO TAP LOOT SCHEDULER ==================
 task.spawn(function()
 
