@@ -650,6 +650,7 @@ potionLabel.Text = "Potion: loading..."
 potionLabel.TextYAlignment = Enum.TextYAlignment.Top
 potionLabel.TextWrapped = true
 -----------Tab Upgrade-----------------
+-- UNLOCK WORLD 1 BUTTON
 local unlockBtn = Instance.new("TextButton", upgradeFrame)
 unlockBtn.Size = UDim2.new(1,-20,0,60)
 unlockBtn.Position = UDim2.new(0,10,0,20)
@@ -659,11 +660,22 @@ unlockBtn.TextColor3 = Color3.new(1,1,1)
 unlockBtn.Font = Enum.Font.GothamBold
 unlockBtn.TextSize = 20
 Instance.new("UICorner", unlockBtn)
+----------------------------------------------------
+-- UNLOCK WORLD 2 BUTTON
+local unlockBtn2 = Instance.new("TextButton", upgradeFrame)
+unlockBtn2.Size = UDim2.new(1,-20,0,60)
+unlockBtn2.Position = UDim2.new(0,10,0,90) -- 🔥 nằm dưới nút world 1
+unlockBtn2.Text = "UNLOCK ALL PORTAL World 2"
+unlockBtn2.BackgroundColor3 = Color3.fromRGB(0,120,200)
+unlockBtn2.TextColor3 = Color3.new(1,1,1)
+unlockBtn2.Font = Enum.Font.GothamBold
+unlockBtn2.TextSize = 20
+Instance.new("UICorner", unlockBtn2)
 --------------------------------------------------
 -- UPGRADE GEM BUTTON (TAB UPGRADE)
 local upgradeGemBtn = Instance.new("TextButton", upgradeFrame)
 upgradeGemBtn.Size = UDim2.new(1,-20,0,60)
-upgradeGemBtn.Position = UDim2.new(0,10,0,100) -- nằm dưới nút unlock
+upgradeGemBtn.Position = UDim2.new(0,10,0,160) -- nằm dưới nút unlock
 upgradeGemBtn.Text = "UPGRADE GEM"
 upgradeGemBtn.BackgroundColor3 = Color3.fromRGB(0,150,200)
 upgradeGemBtn.TextColor3 = Color3.new(1,1,1)
@@ -744,7 +756,40 @@ unlockBtn.MouseButton1Click:Connect(function()
 
     print("✅ Done")
 end)
+-------------------------------------------
 
+unlockBtn2.MouseButton1Click:Connect(function()
+
+    print("🔓 Unlocking Portal World 2...")
+
+    local portals = {
+        "Kryo","Magma","Celestial","Holographic",
+        "Lunar","Cyberpunk","Rainbow"
+    }
+
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = CFrame.new(1493.1, 673, -13253)
+    end
+
+    task.wait(1)
+
+    -- 🔹 MUA PORTAL
+    for _, name in ipairs(portals) do
+        pcall(function()
+            game:GetService("ReplicatedStorage")
+                :WaitForChild(game.JobId)
+                :WaitForChild("Functions")
+                :WaitForChild("BuyPortal")
+                :InvokeServer(name)
+        end)
+
+        task.wait(0.3)
+    end
+
+    print("✅ Done World 2")
+
+end)
 -----Minimize-------------
 local minimized = false
 minimize.MouseButton1Click:Connect(function()
