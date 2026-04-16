@@ -1084,28 +1084,26 @@ task.spawn(function()
     end
 
     while true do
-        task.wait(AutoSystem.autoRebirthDelay)
+    task.wait(AutoSystem.autoRebirthDelay)
 
-        if not AutoSystem.enabled then continue end
+    local text = label.Text
+    local value = parseNumber(text)
 
-        local text = label.Text
-        local value = parseNumber(text)
+    if value then
+        value = math.floor(value)
 
-        if value then
-            value = math.floor(value)
+        print("♻️ Auto Rebirth:", value)
 
-            print("♻️ Auto Rebirth:", value)
-
-            pcall(function()
-                game:GetService("ReplicatedStorage")
-                    :WaitForChild(game.JobId)
-                    :WaitForChild("Functions")
-                    :WaitForChild("Rebirth")
-                    :InvokeServer(1, value)
-            end)
-        else
-            warn("❌ Rebirth parse fail:", text)
-        end
+        pcall(function()
+            game:GetService("ReplicatedStorage")
+                :WaitForChild(game.JobId)
+                :WaitForChild("Functions")
+                :WaitForChild("Rebirth")
+                :InvokeServer(1, value)
+        end)
+    else
+        warn("❌ Rebirth parse fail:", text)
+    end
     end
 
 end)
