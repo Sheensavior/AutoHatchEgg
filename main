@@ -1082,6 +1082,47 @@ task.spawn(function()
 
 end)
 
+---------------Auto Buy DoubleJump-------------
+task.spawn(function()
+
+    local JobID = game.JobId
+
+    local remote = game:GetService("ReplicatedStorage")
+        :WaitForChild(JobID)
+        :WaitForChild("Functions")
+        :WaitForChild("UpgradeDoubleJump")
+
+    local worlds = {"Main","Space","Ancient"}
+
+    while true do
+
+        -- 🔥 CHẠY TRƯỚC
+        if AutoSystem.enabled then
+            print("🦘 Auto Double Jump...")
+
+            for _, world in ipairs(worlds) do
+                for i = 1, 15 do
+
+                    pcall(function()
+                        remote:InvokeServer(world)
+                    end)
+
+                    print("⬆️", world, "(", i, "/15 )")
+
+                    task.wait(0.2)
+                end
+            end
+
+            print("✅ Done Double Jump")
+        end
+
+        -- ⏱ SAU ĐÓ MỚI ĐỢI
+        task.wait(1800) -- 30 phút
+
+    end
+
+end)
+
 -- ================== MINI GAME RUNNER ==================
 local function runMiniGame()
 
