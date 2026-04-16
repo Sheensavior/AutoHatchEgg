@@ -213,6 +213,93 @@ task.spawn(function()
 
 end)
 
+-- ================== AUTO BUY GEM MERCHANT ==================
+task.spawn(function()
+
+    local player = game.Players.LocalPlayer
+    local rs = game:GetService("ReplicatedStorage")
+
+    local function getList()
+        local success, result = pcall(function()
+            return player
+                :WaitForChild("PlayerGui")
+                :WaitForChild("Tabs")
+                :WaitForChild("Merchant")
+                :WaitForChild("Menu")
+                :WaitForChild("Inner")
+                :WaitForChild("List")
+        end)
+
+        return success and result or nil
+    end
+
+    local function getRemote()
+        local success, result = pcall(function()
+            return rs
+                :WaitForChild(game.JobId)
+                :WaitForChild("Functions")
+                :WaitForChild("PurchaseMerchantItem")
+        end)
+
+        return success and result or nil
+    end
+
+    local function isAvailable(item)
+        local stock = item:FindFirstChild("Stock", true)
+        if not stock or not stock:IsA("TextLabel") then
+            return false
+        end
+
+        local text = string.upper(stock.Text)
+
+        if string.find(text, "SOLD") then
+            return false
+        end
+
+        return true
+    end
+
+    while true do
+
+        -- 🔥 CHẠY NGAY
+        local list = getList()
+        local remote = getRemote()
+
+        if list and remote then
+
+            for _, item in pairs(list:GetChildren()) do
+                if item:IsA("Frame") then
+
+                    local name = item.Name
+                    local lower = string.lower(name)
+
+                    -- lọc Potion
+                    if string.find(lower, "potion") then
+
+                        if isAvailable(item) then
+                            print("🧪 BUY GEM:", name)
+
+                            pcall(function()
+                                remote:InvokeServer("GemMerchant", name)
+                            end)
+
+                            task.wait(0.3)
+                        else
+                            print("❌ SOLD OUT:", name)
+                        end
+                    end
+                end
+            end
+
+        end
+
+        -- ⏱ loop nhẹ
+        task.wait(10)
+
+    end
+
+end)
+
 -- ================== INVENTORY ==================
 local inventoryUI = player.PlayerGui
     :WaitForChild("Tabs")
