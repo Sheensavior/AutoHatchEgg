@@ -1102,30 +1102,30 @@ task.spawn(function()
 end)
 
 -- ================== AUTO POTION SCHEDULER ==================
-task.spawn(function()
+-task.spawn(function()
+-
+-    -- 🔥 chạy 1 lần khi start
+-    task.wait(5)
+-    requestMode("POTION")
+-
+-    while true do
+-        local now = os.time()
+-
+ -      local potionQueued = false
+-
+-        for _, slot in pairs({1,3,10}) do
+-        if os.time() >= nextBuyTime[slot] then
+-            if not potionQueued then
+-            requestMode("POTION")
+-            potionQueued = true
+-        end
+-    end
+-end
 
-    -- 🔥 chạy 1 lần khi start
-    task.wait(5)
-    requestMode("POTION")
+-        task.wait(5) -- check nhẹ thôi (KHÔNG spam)
+-    end
 
-    while true do
-        local now = os.time()
-
-       local potionQueued = false
-
-        for _, slot in pairs({1,3,10}) do
-        if os.time() >= nextBuyTime[slot] then
-            if not potionQueued then
-            requestMode("POTION")
-            potionQueued = true
-        end
-    end
-end
-
-        task.wait(5) -- check nhẹ thôi (KHÔNG spam)
-    end
-
-end)
+-end)
 -------------------------------------------
 -- ================== AUTO REBIRTH ==================
 task.spawn(function()
