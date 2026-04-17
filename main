@@ -264,9 +264,7 @@ task.spawn(function()
         -- 🔥 CHẠY NGAY
         local list = getList()
         local remote = getRemote()
-        if not hasPotionInMerchant() then
-            requestMode("FIND_MERCHANT")
-        end
+
         if list and remote then
 
             for _, item in pairs(list:GetChildren()) do
@@ -301,31 +299,7 @@ task.spawn(function()
     end
 
 end)
--------------------------------------------------------------
-local function hasPotionInMerchant()
-    local success, list = pcall(function()
-        return player
-            :WaitForChild("PlayerGui")
-            :WaitForChild("Tabs")
-            :WaitForChild("Merchant")
-            :WaitForChild("Menu")
-            :WaitForChild("Inner")
-            :WaitForChild("List")
-    end)
 
-    if not success or not list then return false end
-
-    for _, item in pairs(list:GetChildren()) do
-        if item:IsA("Frame") then
-            local name = string.lower(item.Name)
-            if string.find(name, "potion") then
-                return true
-            end
-        end
-    end
-
-    return false
-end
 -- ================== INVENTORY ==================
 local inventoryUI = player.PlayerGui
     :WaitForChild("Tabs")
@@ -1460,47 +1434,6 @@ local function runTapLoot()
     end
 end
 
--- ================== FIND GEM MERCHANT ==================
-local function runFindMerchant()
-
-    print("🔍 Finding Gem Merchant...")
-
-    local positions = {
-        Vector3.new(-238.48,209.64,213.31),
-        Vector3.new(-54.49,3496.82,443.35),
-        Vector3.new(-274.58,5829.62,320.07),
-        Vector3.new(-318.62,7569.88,196.95),
-        Vector3.new(-401.06,9199.20,192.54),
-        Vector3.new(-268.59,12933.14,286.36),
-
-        Vector3.new(1430.87,644.48,-13152.08),
-        Vector3.new(1406.43,1733.43,-13263.08),
-        Vector3.new(1401.10,3131.77,-13176.44),
-        Vector3.new(1380.25,5337.15,-13050.46)
-    }
-
-    for _, pos in ipairs(positions) do
-
-        -- nếu đã tìm thấy thì thoát luôn
-        if hasPotionInMerchant() then
-            print("✅ Found Gem Merchant!")
-            return
-        end
-
-        tp(pos)
-        print("📍 Checking:", pos)
-
-        task.wait(1)
-
-        if hasPotionInMerchant() then
-            print("✅ Found Gem Merchant!")
-            return
-        end
-    end
-
-    print("❌ Không tìm thấy Merchant")
-end
-
 -- ================== RAINBOW RUNNER ==================
 
 local function runRainbow()
@@ -1637,11 +1570,9 @@ task.spawn(function()
         elseif CurrentMode == "MINIGAME" then
             runMiniGame()
             CurrentMode = "EGG"
+
         elseif CurrentMode == "RAINBOW" then
             runRainbow()
-            CurrentMode = "EGG"
-        elseif CurrentMode == "FIND_MERCHANT" then
-            runFindMerchant()
             CurrentMode = "EGG"
         elseif CurrentMode == "TAP_LOOT" then
             runTapLoot()
