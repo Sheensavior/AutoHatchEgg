@@ -1467,6 +1467,84 @@ local function runRainbow()
 
     setInventory(false)
 end
+
+-- ================== FIND GEM MERCHANT ==================
+local function runFindGem()
+
+    print("🔍 FIND GEM MERCHANT START")
+
+    local player = game.Players.LocalPlayer
+
+    local positions = {
+        Vector3.new(-238.48,209.64,213.31),
+        Vector3.new(-54.49,3496.82,443.35),
+        Vector3.new(-274.58,5829.62,320.07),
+        Vector3.new(-318.62,7569.88,196.95),
+        Vector3.new(-401.06,9199.20,192.54),
+        Vector3.new(-268.59,12933.14,286.36),
+        Vector3.new(1430.87,644.48,-13152.08),
+        Vector3.new(1406.43,1733.43,-13263.08),
+        Vector3.new(1401.10,3131.77,-13176.44),
+        Vector3.new(1380.25,5337.15,-13050.46)
+    }
+
+    local function getList()
+        local success, result = pcall(function()
+            return player
+                :WaitForChild("PlayerGui")
+                :WaitForChild("Tabs")
+                :WaitForChild("Merchant")
+                :WaitForChild("Menu")
+                :WaitForChild("Inner")
+                :WaitForChild("List")
+        end)
+
+        return success and result or nil
+    end
+
+    local function hasPotion(list)
+        for _, obj in pairs(list:GetChildren()) do
+
+            -- bỏ rác
+            if obj:IsA("UIGridLayout") or obj.Name == "Template" then
+                continue
+            end
+
+            if obj:IsA("Frame") then
+                local name = string.lower(obj.Name)
+
+                -- 🔥 chỉ cần chứa "potion"
+                if string.find(name, "potion") then
+                    return true
+                end
+            end
+        end
+        return false
+    end
+
+    for i, pos in ipairs(positions) do
+
+        if not AutoSystem.enabled then break end
+
+        local char = player.Character or player.CharacterAdded:Wait()
+        local hrp = char:WaitForChild("HumanoidRootPart")
+
+        hrp.CFrame = CFrame.new(pos)
+
+        print("📍 Checking:", i)
+
+        task.wait(0.5)
+
+        local list = getList()
+
+        if list and hasPotion(list) then
+            print("✅ FOUND GEM MERCHANT!")
+            return -- dừng mode
+        end
+    end
+
+    print("❌ NOT FOUND GEM MERCHANT")
+end
 -- ================== POTION RUNNER ==================
 local function runPotion()
 
@@ -1555,6 +1633,11 @@ local function runUpgradeGem()
     print("✅ DONE UPGRADE GEM")
 
 end
+-- 🔥 FORCE RUN FIND GEM 1 LẦN
+task.spawn(function()
+    task.wait(3)
+    requestMode("FIND_GEM")
+end)
 -- ================== MAIN LOOP ==================
 task.spawn(function()
     while true do
@@ -1576,6 +1659,9 @@ task.spawn(function()
             CurrentMode = "EGG"
         elseif CurrentMode == "TAP_LOOT" then
             runTapLoot()
+            CurrentMode = "EGG"
+        elseif CurrentMode == "FIND_GEM" then
+            runFindGem()
             CurrentMode = "EGG"
         elseif CurrentMode == "EGG" then
 
