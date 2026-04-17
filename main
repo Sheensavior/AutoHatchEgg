@@ -1534,7 +1534,7 @@ local function runFindGem()
 
         print("📍 Checking:", i)
 
-        task.wait(1)
+        task.wait(1.5)
 
         local list = getList()
 
