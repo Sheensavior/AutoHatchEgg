@@ -391,6 +391,62 @@ local nextBuyTime = {
     [3] = 0,
     [10] = 0
 }
+-- 💰 LƯU GIÁ POTION
+local potionPrices = {
+    [1] = 0,
+    [3] = 0,
+    [10] = 0
+}
+
+-- 🔢 PARSE SỐ
+local suffixMultiplier = {
+    k = 1e3,
+    m = 1e6,
+    b = 1e9,
+    t = 1e12,
+    qd = 1e15,
+    qn = 1e18,
+    sx = 1e21
+}
+
+local function parseNumber(text)
+    if not text then return nil end
+
+    text = string.lower(text)
+
+    local number, suffix = string.match(text, "([%d%.]+)%s*(%a+)")
+    if not number then
+        return tonumber(text) -- fallback nếu là số thường
+    end
+
+    number = tonumber(number)
+    if not number then return nil end
+
+    if suffix and suffixMultiplier[suffix] then
+        return number * suffixMultiplier[suffix]
+    end
+
+    return number
+end
+
+-- 💎 LẤY GEMS
+local function getGems()
+    local success, label = pcall(function()
+        return player.PlayerGui
+            :WaitForChild("Tabs")
+            :WaitForChild("Upgrades2")
+            :WaitForChild("Menu")
+            :WaitForChild("Tabs")
+            :WaitForChild("Gems")
+            :WaitForChild("Amount")
+    end)
+
+    if success and label then
+        return parseNumber(label.Text)
+    end
+
+    return 0
+end
 
 local function teleportToPotion()
     tp(POTION_POS)
@@ -1113,16 +1169,29 @@ task.spawn(function()
 
       local potionQueued = false
 
-      for _, slot in pairs({1,3,10}) do
-       if os.time() >= nextBuyTime[slot] then
-           if not potionQueued then
-            requestMode("POTION")
-           potionQueued = true
+   local gems = getGems()
+
+for _, slot in pairs({1,3,10}) do
+    if os.time() >= nextBuyTime[slot] then
+
+        local price = potionPrices[slot] or 0
+
+        if gems and price and gems >= price then
+
+            if not potionQueued then
+                print("🧪 READY + ĐỦ GEMS -> BUY SLOT", slot)
+                requestMode("POTION")
+                potionQueued = true
+            end
+
+        else
+            print("💸 KHÔNG ĐỦ GEMS | SLOT:", slot, "| Gems:", gems, "| Price:", price)
         end
-   end
+
+    end
 end
 
-      task.wait(5) -- check nhẹ thôi (KHÔNG spam)
+      task.wait(2) -- check nhẹ thôi (KHÔNG spam)
     end
 
 end)
@@ -1563,7 +1632,29 @@ local function runPotion()
 
     -- 🔥 BƯỚC 1: ĐỌC TOÀN BỘ TEXT TRƯỚC
     local texts = {}
+    -- 💰 LẤY GIÁ POTION
+for _, slot in pairs({1,3,10}) do
 
+    local success, priceLabel = pcall(function()
+        return potionMenu
+            :WaitForChild("BuyOptions")
+            :WaitForChild("Buy"..slot)
+            :WaitForChild("Main")
+            :WaitForChild("Currency")
+            :WaitForChild("Amount")
+    end)
+
+    if success and priceLabel then
+        local price = parseNumber(priceLabel.Text)
+
+        if price then
+            potionPrices[slot] = price
+            print("💰 PRICE SLOT", slot, "=", price)
+        end
+    else
+        warn("❌ Không đọc được giá slot:", slot)
+    end
+end
     for _, slot in pairs({1,3,10}) do
         local success, path = pcall(function()
             return potionMenu.BuyOptions["Buy"..slot].Main.Cooldown
