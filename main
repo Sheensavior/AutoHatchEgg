@@ -41,7 +41,7 @@ local player = Players.LocalPlayer
 local PET_NAME = "Easter Basket"
 
 local POSITIONS = {
-    EGG = Vector3.new(2475.5, 253, -154),
+    EGG = Vector3.new(-31181.6, 8952.5, 3257.9),
     GOLDEN = Vector3.new(1416, 656, -13443),
     RAINBOW = Vector3.new(1219, 665, -13375)
 }
