@@ -814,13 +814,25 @@ unlockBtn2.TextColor3 = Color3.new(1,1,1)
 unlockBtn2.Font = Enum.Font.GothamBold
 unlockBtn2.TextSize = 20
 Instance.new("UICorner", unlockBtn2)
+
+----------------------------------------------------
+-- UNLOCK WORLD 3 BUTTON
+local unlockBtn3 = Instance.new("TextButton", upgradeFrame)
+unlockBtn3.Size = UDim2.new(1,-20,0,60)
+unlockBtn3.Position = UDim2.new(0,10,0,160)
+unlockBtn3.Text = "UNLOCK ALL PORTAL World 3"
+unlockBtn3.BackgroundColor3 = Color3.fromRGB(0,120,200)
+unlockBtn3.TextColor3 = Color3.new(1,1,1)
+unlockBtn3.Font = Enum.Font.GothamBold
+unlockBtn3.TextSize = 20
+Instance.new("UICorner", unlockBtn3)
 --------------------------------------------------
 -- UPGRADE GEM BUTTON (TAB UPGRADE)
 local upgradeGemBtn = Instance.new("TextButton", upgradeFrame)
 upgradeGemBtn.Size = UDim2.new(1,-20,0,60)
-upgradeGemBtn.Position = UDim2.new(0,10,0,160) -- nằm dưới nút unlock
+upgradeGemBtn.Position = UDim2.new(0,10,0,230) -- nằm dưới nút unlock
 upgradeGemBtn.Text = "UPGRADE GEM"
-upgradeGemBtn.BackgroundColor3 = Color3.fromRGB(0,150,200)
+upgradeGemBtn.BackgroundColor3 = Color3.fromRGB(0,150,300)
 upgradeGemBtn.TextColor3 = Color3.new(1,1,1)
 upgradeGemBtn.Font = Enum.Font.GothamBold
 upgradeGemBtn.TextSize = 20
@@ -931,6 +943,43 @@ unlockBtn2.MouseButton1Click:Connect(function()
     end
 
     print("✅ Done World 2")
+
+end)
+
+----------------------------------------------------
+unlockBtn3.MouseButton1Click:Connect(function()
+
+    print("🔓 Unlocking Portal World 3...")
+
+    local portals = {
+        "Colosseum",
+        "The Pyramids",
+        "Asgard",
+        "Azteca",
+        "Imperial Dynasty",
+        "Pirate Cove"
+    }
+
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = CFrame.new(-31431.1, 1112.7, 2741.2)
+    end
+
+    task.wait(1)
+
+    for _, name in ipairs(portals) do
+        pcall(function()
+            game:GetService("ReplicatedStorage")
+                :WaitForChild(game.JobId)
+                :WaitForChild("Functions")
+                :WaitForChild("BuyPortal")
+                :InvokeServer(name)
+        end)
+
+        task.wait(0.3)
+    end
+
+    print("✅ Done World 3")
 
 end)
 -----Minimize-------------
