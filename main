@@ -1856,14 +1856,19 @@ task.spawn(function()
                     -- TELEPORT CHỈ 1 LẦN
                     if not eggTeleported then
 
-                        while not isNearPosition(POSITIONS.EGG, 20) do
+                        while not isNearPosition(POSITIONS.EGG, 25) do
 
+                        -- spam portal liên tục
+                            for i = 1, 6 do
                             teleportPortal(PORTALS.EGG)
-                            task.wait(1.5)
-                            tp(POSITIONS.EGG)
-                            task.wait(1.5)
-                            end
-                            eggTeleported = true
+                            task.wait(0.25)
+                        end
+                        task.wait(1)
+                        tp(POSITIONS.EGG)
+                        task.wait(1)
+                        end
+
+                        eggTeleported = true
                     end
 
                     -- HATCH LIÊN TỤC
