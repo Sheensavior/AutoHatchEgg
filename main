@@ -46,6 +46,10 @@ local POSITIONS = {
     RAINBOW = Vector3.new(1219, 665, -13375)
 }
 
+local PORTALS = {
+    EGG = "Pirate Cove"
+}
+
 local AutoSystem = {
     enabled = true,
     eggAmount = 8,
@@ -381,7 +385,16 @@ local function tp(pos)
         char.HumanoidRootPart.CFrame = CFrame.new(pos)
     end
 end
-
+-----------------------------------------------------
+local function teleportPortal(name)
+    pcall(function()
+        game:GetService("ReplicatedStorage")
+            :WaitForChild(game.JobId)
+            :WaitForChild("Functions")
+            :WaitForChild("TeleportZone")
+            :InvokeServer(name)
+    end)
+end
 -- ================== POTION SYSTEM ==================
 
 local POTION_POS = Vector3.new(-206.6, 9198.5, 159.8)
@@ -1819,6 +1832,8 @@ task.spawn(function()
                 local ids = getPets()
 
                 if AutoSystem.mode == "EGG" then
+                    teleportPortal(PORTALS.EGG)
+                    task.wait(1)
                     tp(POSITIONS.EGG)
 
                     if #ids >= 6 then
