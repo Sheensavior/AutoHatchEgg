@@ -1859,7 +1859,7 @@ task.spawn(function()
                         while not isNearPosition(POSITIONS.EGG, 25) do
 
                         -- spam portal liên tục
-                            for i = 1, 6 do
+                            for i = 1, 10 do
                             teleportPortal(PORTALS.EGG)
                             task.wait(0.25)
                         end
