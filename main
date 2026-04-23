@@ -1811,20 +1811,25 @@ task.spawn(function()
         end
         if CurrentMode == "POTION" then
             runPotion()
+            eggTeleported = false
             CurrentMode = "EGG"
 
         elseif CurrentMode == "MINIGAME" then
             runMiniGame()
+            eggTeleported = false
             CurrentMode = "EGG"
 
         elseif CurrentMode == "RAINBOW" then
             runRainbow()
+            eggTeleported = false
             CurrentMode = "EGG"
         elseif CurrentMode == "TAP_LOOT" then
             runTapLoot()
+            eggTeleported = false
             CurrentMode = "EGG"
         elseif CurrentMode == "FIND_GEM" then
             runFindGem()
+            eggTeleported = false
             CurrentMode = "EGG"
         elseif CurrentMode == "EGG" then
 
@@ -1847,7 +1852,6 @@ task.spawn(function()
                     -- HATCH LIÊN TỤC
                 if #ids >= 6 then
                         AutoSystem.mode = "GOLDEN"
-                        eggTeleported = false
                 elseif hatchFolder then
                         hatchFolder.Functions.OpenEgg:InvokeServer("Spring Blossom", AutoSystem.eggAmount)
                 end
