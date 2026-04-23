@@ -386,6 +386,20 @@ local function tp(pos)
         char.HumanoidRootPart.CFrame = CFrame.new(pos)
     end
 end
+----------------------------------------------------
+local function isNearPosition(targetPos, tolerance)
+    tolerance = tolerance or 15
+
+    local char = player.Character
+    if not char then return false end
+
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+
+    local distance = (hrp.Position - targetPos).Magnitude
+
+    return distance <= tolerance
+end
 -----------------------------------------------------
 local function teleportPortal(name)
     pcall(function()
@@ -1841,12 +1855,15 @@ task.spawn(function()
 
                     -- TELEPORT CHỈ 1 LẦN
                     if not eggTeleported then
-                        eggTeleported = true
 
-                        teleportPortal(PORTALS.EGG)
-                        task.wait(1)
+                        while not isNearPosition(POSITIONS.EGG, 20) do
 
-                        tp(POSITIONS.EGG)
+                            teleportPortal(PORTALS.EGG)
+                            task.wait(1.5)
+                            tp(POSITIONS.EGG)
+                            task.wait(1.5)
+                            end
+                            eggTeleported = true
                     end
 
                     -- HATCH LIÊN TỤC
