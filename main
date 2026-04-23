@@ -63,6 +63,7 @@ local AutoSystem = {
 -- ================== MODE QUEUE ==================
 local ModeQueue = {}
 local CurrentMode = "EGG"
+local eggTeleported = false
 
 local function requestMode(mode)
     -- tránh spam trùng
@@ -1832,15 +1833,24 @@ task.spawn(function()
                 local ids = getPets()
 
                 if AutoSystem.mode == "EGG" then
-                    teleportPortal(PORTALS.EGG)
-                    task.wait(1)
-                    tp(POSITIONS.EGG)
 
-                    if #ids >= 6 then
-                        AutoSystem.mode = "GOLDEN"
-                    elseif hatchFolder then
-                        hatchFolder.Functions.OpenEgg:InvokeServer("Spring Blossom", AutoSystem.eggAmount)
+                    -- TELEPORT CHỈ 1 LẦN
+                    if not eggTeleported then
+                        eggTeleported = true
+
+                        teleportPortal(PORTALS.EGG)
+                        task.wait(1)
+
+                        tp(POSITIONS.EGG)
                     end
+
+                    -- HATCH LIÊN TỤC
+                if #ids >= 6 then
+                        AutoSystem.mode = "GOLDEN"
+                        eggTeleported = false
+                elseif hatchFolder then
+                        hatchFolder.Functions.OpenEgg:InvokeServer("Spring Blossom", AutoSystem.eggAmount)
+                end
 
                 elseif AutoSystem.mode == "GOLDEN" then
                     tp(POSITIONS.GOLDEN)
