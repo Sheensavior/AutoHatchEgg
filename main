@@ -386,6 +386,14 @@ local function tp(pos)
         char.HumanoidRootPart.CFrame = CFrame.new(pos)
     end
 end
+
+------------------------------------------------------
+local function teleportTo(pos)
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = CFrame.new(pos)
+    end
+end
 ----------------------------------------------------
 local function isNearPosition(targetPos, tolerance)
     tolerance = tolerance or 15
@@ -717,6 +725,15 @@ upgradeTab.Font = Enum.Font.GothamBold
 upgradeTab.TextSize = 18
 Instance.new("UICorner", upgradeTab)
 
+local teleportTab = Instance.new("TextButton", sidebar)
+teleportTab.Size = UDim2.new(1,-10,0,45)
+teleportTab.Text = "TELEPORT"
+teleportTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+teleportTab.TextColor3 = Color3.new(1,1,1)
+teleportTab.Font = Enum.Font.GothamBold
+teleportTab.TextSize = 18
+Instance.new("UICorner", teleportTab)
+
 local title = Instance.new("TextLabel", top)
 title.Size = UDim2.new(1,-40,1,0)
 title.Position = UDim2.new(0,10,0,0)
@@ -747,6 +764,31 @@ upgradeFrame.Size = autoFrame.Size
 upgradeFrame.Position = autoFrame.Position
 upgradeFrame.BackgroundTransparency = 1
 upgradeFrame.Visible = false
+
+local teleportFrame = Instance.new("Frame", main)
+teleportFrame.Size = autoFrame.Size
+teleportFrame.Position = autoFrame.Position
+teleportFrame.BackgroundTransparency = 1
+teleportFrame.Visible = false
+
+local function createTeleportButton(text, posY)
+    local btn = Instance.new("TextButton", teleportFrame)
+    btn.Size = UDim2.new(1,-20,0,55)
+    btn.Position = UDim2.new(0,10,0,posY)
+    btn.Text = text
+    btn.BackgroundColor3 = Color3.fromRGB(0,120,200)
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 18
+    Instance.new("UICorner", btn)
+    return btn
+end
+
+local tpGoldenBtn = createTeleportButton("TELEPORT GOLDEN", 20)
+local tpRainbowBtn = createTeleportButton("TELEPORT RAINBOW", 90)
+local tpEnchantBtn = createTeleportButton("TELEPORT ENCHANT", 160)
+local tpBankBtn = createTeleportButton("TELEPORT BANK", 230)
+local tpSuperRebirthBtn = createTeleportButton("TELEPORT SUPER REBIRTH", 300)
 
 -- TOGGLE
 local toggle = Instance.new("TextButton", autoFrame)
@@ -869,7 +911,7 @@ Instance.new("UICorner", unlockBtn3)
 -- UPGRADE GEM BUTTON (TAB UPGRADE)
 local upgradeGemBtn = Instance.new("TextButton", upgradeFrame)
 upgradeGemBtn.Size = UDim2.new(1,-20,0,60)
-upgradeGemBtn.Position = UDim2.new(0,10,0,230) -- nằm dưới nút unlock
+upgradeGemBtn.Position = UDim2.new(0,10,0,300) -- nằm dưới nút unlock
 upgradeGemBtn.Text = "UPGRADE GEM"
 upgradeGemBtn.BackgroundColor3 = Color3.fromRGB(0,150,300)
 upgradeGemBtn.TextColor3 = Color3.new(1,1,1)
@@ -1041,6 +1083,7 @@ minimize.MouseButton1Click:Connect(function()
     -- ẨN luôn nút upgrade tab khi thu nhỏ
     autoTab.Visible = not minimized
     upgradeTab.Visible = not minimized
+    teleportTab.Visible = not minimized
 
     -- THU NHỎ KHUNG
     if minimized then
@@ -1051,19 +1094,26 @@ minimize.MouseButton1Click:Connect(function()
 end)
 ------------------------------------------------------
 local function switchTab(tab)
+
+    autoFrame.Visible = false
+    upgradeFrame.Visible = false
+    teleportFrame.Visible = false
+
+    autoTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    upgradeTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    teleportTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
     if tab == "AUTO" then
         autoFrame.Visible = true
-        upgradeFrame.Visible = false
-
         autoTab.BackgroundColor3 = Color3.fromRGB(0,170,100)
-        upgradeTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
 
     elseif tab == "UPGRADE" then
-        autoFrame.Visible = false
         upgradeFrame.Visible = true
-
         upgradeTab.BackgroundColor3 = Color3.fromRGB(0,170,100)
-        autoTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
+    elseif tab == "TELEPORT" then
+        teleportFrame.Visible = true
+        teleportTab.BackgroundColor3 = Color3.fromRGB(0,170,100)
     end
 end
 
@@ -1073,6 +1123,10 @@ end)
 
 upgradeTab.MouseButton1Click:Connect(function()
     switchTab("UPGRADE")
+end)
+
+teleportTab.MouseButton1Click:Connect(function()
+    switchTab("TELEPORT")
 end)
 -- UI UPDATE
 local function updateUI()
@@ -1858,6 +1912,29 @@ task.spawn(function()
     task.wait(3)
     requestMode("FIND_GEM")
 end)
+-----------------------------------------------
+
+tpGoldenBtn.MouseButton1Click:Connect(function()
+    teleportTo(Vector3.new(1416, 656, -13443))
+end)
+
+tpRainbowBtn.MouseButton1Click:Connect(function()
+    teleportTo(Vector3.new(1219, 665, -13375))
+end)
+
+tpEnchantBtn.MouseButton1Click:Connect(function()
+    teleportTo(Vector3.new(1305.38, 664.98, -13454.98))
+end)
+
+tpBankBtn.MouseButton1Click:Connect(function()
+    teleportTo(Vector3.new(1457.17, 651.72, -13231.70))
+end)
+
+tpSuperRebirthBtn.MouseButton1Click:Connect(function()
+    teleportTo(Vector3.new(-16.36, 328.77, -76.43))
+end)
+
+
 -- ================== MAIN LOOP ==================
 task.spawn(function()
     while true do
