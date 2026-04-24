@@ -1106,9 +1106,15 @@ autoClickBtn.MouseButton1Click:Connect(function()
 end)
 
 toggle.MouseButton1Click:Connect(function()
+
     AutoSystem.enabled = not AutoSystem.enabled
+
+    -- reset teleport khi bật lại
+    eggTeleported = false
+
     saveData()
     updateUI()
+
 end)
 
 input.FocusLost:Connect(function()
