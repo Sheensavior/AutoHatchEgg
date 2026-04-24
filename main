@@ -1973,7 +1973,7 @@ end
 
 end
 
--===================== Runner MASTERY GOLDEN=======================
+-- ===================== Runner MASTERY GOLDEN =====================
 
 local function runAutoMasteryGolden()
 
