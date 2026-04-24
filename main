@@ -969,7 +969,14 @@ unlockBtn2.MouseButton1Click:Connect(function()
 
         task.wait(0.3)
     end
-
+-- 🔥 BUY WORLD ANCIENT
+pcall(function()
+    game:GetService("ReplicatedStorage")
+        :WaitForChild(game.JobId)
+        :WaitForChild("Functions")
+        :WaitForChild("BuyWorld")
+        :InvokeServer("Ancient")
+end)
     print("✅ Done World 2")
 
 end)
