@@ -63,6 +63,7 @@ local AutoSystem = {
 -- ================== MODE QUEUE ==================
 local ModeQueue = {}
 local CurrentMode = "EGG"
+local masteryGoldenRunning = false
 local eggTeleported = false
 
 local function requestMode(mode)
@@ -734,6 +735,15 @@ teleportTab.Font = Enum.Font.GothamBold
 teleportTab.TextSize = 18
 Instance.new("UICorner", teleportTab)
 
+local masteryTab = Instance.new("TextButton", sidebar)
+masteryTab.Size = UDim2.new(1,-10,0,45)
+masteryTab.Text = "AUTO MASTERY"
+masteryTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+masteryTab.TextColor3 = Color3.new(1,1,1)
+masteryTab.Font = Enum.Font.GothamBold
+masteryTab.TextSize = 18
+Instance.new("UICorner", masteryTab)
+
 local title = Instance.new("TextLabel", top)
 title.Size = UDim2.new(1,-40,1,0)
 title.Position = UDim2.new(0,10,0,0)
@@ -771,6 +781,12 @@ teleportFrame.Position = autoFrame.Position
 teleportFrame.BackgroundTransparency = 1
 teleportFrame.Visible = false
 
+local masteryFrame = Instance.new("Frame", main)
+masteryFrame.Size = autoFrame.Size
+masteryFrame.Position = autoFrame.Position
+masteryFrame.BackgroundTransparency = 1
+masteryFrame.Visible = false
+
 local function createTeleportButton(text, posY)
     local btn = Instance.new("TextButton", teleportFrame)
     btn.Size = UDim2.new(1,-20,0,55)
@@ -789,6 +805,16 @@ local tpRainbowBtn = createTeleportButton("TELEPORT RAINBOW", 90)
 local tpEnchantBtn = createTeleportButton("TELEPORT ENCHANT", 160)
 local tpBankBtn = createTeleportButton("TELEPORT BANK", 230)
 local tpSuperRebirthBtn = createTeleportButton("TELEPORT SUPER REBIRTH", 300)
+
+local masteryGoldenBtn = Instance.new("TextButton", masteryFrame)
+masteryGoldenBtn.Size = UDim2.new(1,-20,0,60)
+masteryGoldenBtn.Position = UDim2.new(0,10,0,20)
+masteryGoldenBtn.Text = "MASTERY GOLDEN MAX"
+masteryGoldenBtn.BackgroundColor3 = Color3.fromRGB(180,120,0)
+masteryGoldenBtn.TextColor3 = Color3.new(1,1,1)
+masteryGoldenBtn.Font = Enum.Font.GothamBold
+masteryGoldenBtn.TextSize = 22
+Instance.new("UICorner", masteryGoldenBtn)
 
 -- TOGGLE
 local toggle = Instance.new("TextButton", autoFrame)
@@ -1098,10 +1124,12 @@ local function switchTab(tab)
     autoFrame.Visible = false
     upgradeFrame.Visible = false
     teleportFrame.Visible = false
+    masteryFrame.Visible = false
 
     autoTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
     upgradeTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
     teleportTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    masteryTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
 
     if tab == "AUTO" then
         autoFrame.Visible = true
@@ -1114,6 +1142,9 @@ local function switchTab(tab)
     elseif tab == "TELEPORT" then
         teleportFrame.Visible = true
         teleportTab.BackgroundColor3 = Color3.fromRGB(0,170,100)
+    elseif tab == "MASTERY" then
+        masteryFrame.Visible = true
+        masteryTab.BackgroundColor3 = Color3.fromRGB(0,170,100)
     end
 end
 
@@ -1127,6 +1158,10 @@ end)
 
 teleportTab.MouseButton1Click:Connect(function()
     switchTab("TELEPORT")
+end)
+
+masteryTab.MouseButton1Click:Connect(function()
+    switchTab("MASTERY")
 end)
 -- UI UPDATE
 local function updateUI()
@@ -1211,6 +1246,10 @@ end)
 -- ================== AUTO RAINBOW ==================
 rainbowBtn.MouseButton1Click:Connect(function()
     requestMode("RAINBOW")
+end)
+---------------------------------------------------
+masteryGoldenBtn.MouseButton1Click:Connect(function()
+    requestMode("MASTERY_GOLDEN")
 end)
 -- ================== AUTO INVENTORY LOOP ==================
 task.spawn(function()
@@ -1719,6 +1758,213 @@ local function runRainbow()
     setInventory(false)
 end
 
+-- ================== AUTO MASTERY GOLDEN ==================
+local function runMasteryGolden()
+
+    print("🔥 START MASTERY GOLDEN")
+
+    masteryGoldenRunning = true
+
+    local stopEverything = false
+    local cleanupDone = false
+
+    local inventoryUI = player.PlayerGui
+        :WaitForChild("Tabs")
+        :WaitForChild("Inventory")
+
+    local container = inventoryUI
+        :WaitForChild("Menu")
+        :WaitForChild("Categories")
+        :WaitForChild("Pets")
+        :WaitForChild("Inner")
+        :WaitForChild("List")
+        :WaitForChild("Container")
+
+    local goldensLevel = player.PlayerGui
+        :WaitForChild("Tabs")
+        :WaitForChild("Mastery")
+        :WaitForChild("Menu")
+        :WaitForChild("Container")
+        :WaitForChild("Goldens")
+        :WaitForChild("Level")
+
+    local functionsFolder = rs
+        :WaitForChild(game.JobId)
+        :WaitForChild("Functions")
+
+    local openEggRemote = functionsFolder:WaitForChild("OpenEgg")
+    local craftRemote = functionsFolder:WaitForChild("CraftPets")
+    local deleteRemote = functionsFolder:WaitForChild("DeletePet")
+
+    local allowedPets = {
+        Bear = true,
+        Bunny = true,
+        Cat = true,
+        Panther = true,
+        Puppy = true
+    }
+
+    local startPos = Vector3.new(-175.59, 214.09, 243.29)
+
+    tp(startPos)
+    setInventory(true)
+
+    local function isGoldenPet(petFrame)
+
+        local gradient = petFrame:FindFirstChild("UIGradient")
+
+        if not gradient then
+            return false
+        end
+
+        local seq = tostring(gradient.Color)
+
+        return string.find(seq, "1 0%.") ~= nil
+    end
+
+    local function deleteAllTargetPets()
+
+        for _, pet in pairs(container:GetChildren()) do
+
+            if pet:IsA("Frame") then
+
+                local petName = pet.Name
+                local petId = pet:GetAttribute("Id")
+
+                if allowedPets[petName] and petId then
+
+                    pcall(function()
+                        deleteRemote:InvokeServer(petId)
+                    end)
+
+                    task.wait(0.05)
+                end
+            end
+        end
+    end
+
+    local function reachedLevel100()
+
+        local text = goldensLevel.Text
+
+        if string.find(text, "Lv%.%s*100") then
+
+            if not cleanupDone then
+
+                cleanupDone = true
+                stopEverything = true
+
+                task.wait(1)
+
+                deleteAllTargetPets()
+            end
+
+            return true
+        end
+
+        return false
+    end
+
+    local function craftSpecificPets()
+
+        local groups = {
+            Bear = {},
+            Bunny = {},
+            Cat = {},
+            Panther = {},
+            Puppy = {}
+        }
+
+        for _, pet in pairs(container:GetChildren()) do
+
+            if pet:IsA("Frame") then
+
+                local petName = pet.Name
+                local petId = pet:GetAttribute("Id")
+
+                if allowedPets[petName] and petId then
+
+                    if not isGoldenPet(pet) then
+                        table.insert(groups[petName], petId)
+                    end
+                end
+            end
+        end
+
+        for _, ids in pairs(groups) do
+
+            if #ids >= 6 then
+
+                pcall(function()
+                    craftRemote:InvokeServer({
+                        ids[1],
+                        ids[2],
+                        ids[3],
+                        ids[4],
+                        ids[5],
+                        ids[6]
+                    })
+                end)
+
+                task.wait(0.2)
+            end
+        end
+    end
+
+    local function deleteGoldenPets()
+
+        for _, pet in pairs(container:GetChildren()) do
+
+            if pet:IsA("Frame") then
+
+                local petName = pet.Name
+                local petId = pet:GetAttribute("Id")
+
+                if allowedPets[petName] and petId then
+
+                    if isGoldenPet(pet) then
+
+                        pcall(function()
+                            deleteRemote:InvokeServer(petId)
+                        end)
+
+                        task.wait(0.05)
+                    end
+                end
+            end
+        end
+    end
+
+    while true do
+
+        if stopEverything then
+            break
+        end
+
+        if reachedLevel100() then
+            break
+        end
+
+        pcall(function()
+            openEggRemote:InvokeServer("Basic", 11)
+        end)
+
+        pcall(function()
+            craftSpecificPets()
+        end)
+
+        pcall(function()
+            deleteGoldenPets()
+        end)
+
+        task.wait(0.3)
+    end
+
+    masteryGoldenRunning = false
+
+    print("✅ END MASTERY GOLDEN")
+end
+
 -- ================== FIND GEM MERCHANT ==================
 local function runFindGem()
 
@@ -1959,6 +2205,10 @@ task.spawn(function()
             CurrentMode = "EGG"
         elseif CurrentMode == "TAP_LOOT" then
             runTapLoot()
+            eggTeleported = false
+            CurrentMode = "EGG"
+        elseif CurrentMode == "MASTERY_GOLDEN" then
+            runMasteryGolden()
             eggTeleported = false
             CurrentMode = "EGG"
         elseif CurrentMode == "FIND_GEM" then
