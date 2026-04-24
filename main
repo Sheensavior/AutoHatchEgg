@@ -1413,6 +1413,25 @@ task.spawn(function()
     end
 
 end)
+------------------------------------------------------------
+
+-- ================== AUTO CLAIM RANK REWARD ==================
+task.spawn(function()
+
+    while true do
+
+        pcall(function()
+            game:GetService("ReplicatedStorage")
+                :WaitForChild(game.JobId)
+                :WaitForChild("Functions")
+                :WaitForChild("ClaimRankReward")
+                :InvokeServer()
+        end)
+
+        task.wait(60) -- mỗi 1 phút
+    end
+
+end)
 
 -- ================== MINI GAME RUNNER ==================
 local function runMiniGame()
