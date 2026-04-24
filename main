@@ -675,7 +675,7 @@ gui.ResetOnSpawn = false
 gui.DisplayOrder = 999999
 
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0,380,0,470)
+main.Size = UDim2.new(0,520,0,420)
 main.AnchorPoint = Vector2.new(1,1)
 main.Position = UDim2.new(1, -10, 1, -10)
 main.BackgroundColor3 = Color3.fromRGB(20,20,20)
@@ -687,6 +687,35 @@ local top = Instance.new("Frame", main)
 top.Size = UDim2.new(1,0,0,40)
 top.BackgroundColor3 = Color3.fromRGB(15,15,15)
 Instance.new("UICorner", top)
+
+local sidebar = Instance.new("Frame", main)
+sidebar.Size = UDim2.new(0,130,1,-40)
+sidebar.Position = UDim2.new(0,0,0,40)
+sidebar.BackgroundColor3 = Color3.fromRGB(15,15,15)
+Instance.new("UICorner", sidebar)
+local sideLayout = Instance.new("UIListLayout", sidebar)
+sideLayout.Padding = UDim.new(0,6)
+sideLayout.SortOrder = Enum.SortOrder.LayoutOrder
+sideLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- ================== TAB BUTTONS ==================
+local autoTab = Instance.new("TextButton", sidebar)
+autoTab.Size = UDim2.new(1,-10,0,45)
+autoTab.Text = "AUTO"
+autoTab.BackgroundColor3 = Color3.fromRGB(0,170,100)
+autoTab.TextColor3 = Color3.new(1,1,1)
+autoTab.Font = Enum.Font.GothamBold
+autoTab.TextSize = 18
+Instance.new("UICorner", autoTab)
+
+local upgradeTab = Instance.new("TextButton", sidebar)
+upgradeTab.Size = UDim2.new(1,-10,0,45)
+upgradeTab.Text = "UPGRADE"
+upgradeTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+upgradeTab.TextColor3 = Color3.new(1,1,1)
+upgradeTab.Font = Enum.Font.GothamBold
+upgradeTab.TextSize = 18
+Instance.new("UICorner", upgradeTab)
 
 local title = Instance.new("TextLabel", top)
 title.Size = UDim2.new(1,-40,1,0)
@@ -706,29 +735,11 @@ minimize.BackgroundColor3 = Color3.fromRGB(40,40,40)
 minimize.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", minimize)
 
--- ================== TAB HOLDER ==================
-local tabHolder = Instance.new("Frame", main)
-tabHolder.Size = UDim2.new(1,0,0,35)
-tabHolder.Position = UDim2.new(0,0,0,40)
-tabHolder.BackgroundTransparency = 1
-
-local autoTab = Instance.new("TextButton", tabHolder)
-autoTab.Size = UDim2.new(0.5,0,1,0)
-autoTab.Text = "AUTO"
-autoTab.BackgroundColor3 = Color3.fromRGB(0,170,100)
-autoTab.TextColor3 = Color3.new(1,1,1)
-
-local upgradeTab = Instance.new("TextButton", tabHolder)
-upgradeTab.Size = UDim2.new(0.5,0,1,0)
-upgradeTab.Position = UDim2.new(0.5,0,0,0)
-upgradeTab.Text = "UPGRADE"
-upgradeTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
-upgradeTab.TextColor3 = Color3.new(1,1,1)
 
 -- ================== CONTENT ==================
 local autoFrame = Instance.new("Frame", main)
-autoFrame.Size = UDim2.new(1,0,1,-75)
-autoFrame.Position = UDim2.new(0,0,0,75)
+autoFrame.Size = UDim2.new(1,-140,1,-50)
+autoFrame.Position = UDim2.new(0,135,0,45)
 autoFrame.BackgroundTransparency = 1
 
 local upgradeFrame = Instance.new("Frame", main)
@@ -1025,7 +1036,7 @@ minimize.MouseButton1Click:Connect(function()
     -- ẨN / HIỆN UI
     autoFrame.Visible = not minimized
     upgradeFrame.Visible = false
-    tabHolder.Visible = not minimized
+    sidebar.Visible = not minimized
 
     -- ẨN luôn nút upgrade tab khi thu nhỏ
     autoTab.Visible = not minimized
