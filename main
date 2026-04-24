@@ -57,7 +57,10 @@ local AutoSystem = {
     isRainbowRunning = false,
     autoClick = true,
     miniGame = false,
-    autoRebirthDelay = 60
+    autoRebirthDelay = 60,
+
+    masteryGoldenRunning = false,
+    masteryFinished = false
 }
 
 -- ================== MODE QUEUE ==================
@@ -734,6 +737,15 @@ teleportTab.Font = Enum.Font.GothamBold
 teleportTab.TextSize = 18
 Instance.new("UICorner", teleportTab)
 
+local masteryTab = Instance.new("TextButton", sidebar)
+masteryTab.Size = UDim2.new(1,-10,0,45)
+masteryTab.Text = "AUTO MASTERY"
+masteryTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+masteryTab.TextColor3 = Color3.new(1,1,1)
+masteryTab.Font = Enum.Font.GothamBold
+masteryTab.TextSize = 18
+Instance.new("UICorner", masteryTab)
+
 local title = Instance.new("TextLabel", top)
 title.Size = UDim2.new(1,-40,1,0)
 title.Position = UDim2.new(0,10,0,0)
@@ -771,6 +783,12 @@ teleportFrame.Position = autoFrame.Position
 teleportFrame.BackgroundTransparency = 1
 teleportFrame.Visible = false
 
+local masteryFrame = Instance.new("Frame", main)
+masteryFrame.Size = autoFrame.Size
+masteryFrame.Position = autoFrame.Position
+masteryFrame.BackgroundTransparency = 1
+masteryFrame.Visible = false
+
 local function createTeleportButton(text, posY)
     local btn = Instance.new("TextButton", teleportFrame)
     btn.Size = UDim2.new(1,-20,0,55)
@@ -789,6 +807,17 @@ local tpRainbowBtn = createTeleportButton("TELEPORT RAINBOW", 90)
 local tpEnchantBtn = createTeleportButton("TELEPORT ENCHANT", 160)
 local tpBankBtn = createTeleportButton("TELEPORT BANK", 230)
 local tpSuperRebirthBtn = createTeleportButton("TELEPORT SUPER REBIRTH", 300)
+
+--Mastery Golden
+local masteryGoldenBtn = Instance.new("TextButton", masteryFrame)
+masteryGoldenBtn.Size = UDim2.new(1,-20,0,60)
+masteryGoldenBtn.Position = UDim2.new(0,10,0,20)
+masteryGoldenBtn.Text = "MASTERY GOLDEN MAX"
+masteryGoldenBtn.BackgroundColor3 = Color3.fromRGB(255,170,0)
+masteryGoldenBtn.TextColor3 = Color3.new(1,1,1)
+masteryGoldenBtn.Font = Enum.Font.GothamBold
+masteryGoldenBtn.TextSize = 20
+Instance.new("UICorner", masteryGoldenBtn)
 
 -- TOGGLE
 local toggle = Instance.new("TextButton", autoFrame)
@@ -1084,6 +1113,7 @@ minimize.MouseButton1Click:Connect(function()
     autoTab.Visible = not minimized
     upgradeTab.Visible = not minimized
     teleportTab.Visible = not minimized
+    masteryTab.Visible = not minimized
 
     -- THU NHỎ KHUNG
     if minimized then
@@ -1098,10 +1128,12 @@ local function switchTab(tab)
     autoFrame.Visible = false
     upgradeFrame.Visible = false
     teleportFrame.Visible = false
+    masteryFrame.Visible = false
 
     autoTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
     upgradeTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
     teleportTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    masteryTab.BackgroundColor3 = Color3.fromRGB(40,40,40)
 
     if tab == "AUTO" then
         autoFrame.Visible = true
@@ -1114,6 +1146,10 @@ local function switchTab(tab)
     elseif tab == "TELEPORT" then
         teleportFrame.Visible = true
         teleportTab.BackgroundColor3 = Color3.fromRGB(0,170,100)
+
+    elseif tab == "MASTERY" then
+        masteryFrame.Visible = true
+        masteryTab.BackgroundColor3 = Color3.fromRGB(0,170,100)
     end
 end
 
@@ -1128,6 +1164,10 @@ end)
 teleportTab.MouseButton1Click:Connect(function()
     switchTab("TELEPORT")
 end)
+masteryTab.MouseButton1Click:Connect(function()
+    switchTab("MASTERY")
+end)
+
 -- UI UPDATE
 local function updateUI()
     toggle.Text = AutoSystem.enabled and "ON" or "OFF"
@@ -1212,6 +1252,11 @@ end)
 rainbowBtn.MouseButton1Click:Connect(function()
     requestMode("RAINBOW")
 end)
+
+----------------------
+masteryGoldenBtn.MouseButton1Click:Connect(function()
+    requestMode("AUTO_MASTERY_GOLDEN")
+end)
 -- ================== AUTO INVENTORY LOOP ==================
 task.spawn(function()
     while true do
@@ -1231,6 +1276,75 @@ task.spawn(function()
         end
     end
 end)
+
+-------------------------------------------
+
+local DELETE_PETS = {
+    ["Bear"] = true,
+    ["Bunny"] = true,
+    ["Cat"] = true,
+    ["Panther"] = true,
+    ["Puppy"] = true
+}
+
+local function deleteTrashPets()
+
+    local deleteRemote
+
+    pcall(function()
+        deleteRemote = game:GetService("ReplicatedStorage")
+            :WaitForChild(game.JobId)
+            :WaitForChild("Functions")
+            :WaitForChild("DeletePet")
+    end)
+
+    if not deleteRemote then
+        warn("❌ DeletePet remote not found")
+        return
+    end
+
+    setInventory(true)
+    waitForInventoryLoad(5)
+
+    for _, pet in pairs(container:GetChildren()) do
+
+        if DELETE_PETS[pet.Name] then
+
+            local id = pet:GetAttribute("Id")
+
+            if id then
+                pcall(function()
+                    deleteRemote:InvokeServer(id)
+                end)
+
+                print("🗑 Deleted:", pet.Name)
+                task.wait(0.1)
+            end
+        end
+    end
+end
+
+-----------------Check Level Mastery Golden --------------
+
+local function getGoldenMasteryLevel()
+
+    local success, label = pcall(function()
+        return player.PlayerGui
+            :WaitForChild("Tabs")
+            :WaitForChild("Mastery")
+            :WaitForChild("Menu")
+            :WaitForChild("Inner")
+            :WaitForChild("Golden")
+            :WaitForChild("Level")
+    end)
+
+    if success and label then
+        local num = tonumber(label.Text:match("%d+"))
+        return num or 0
+    end
+
+    return 0
+end
 -- ================== AUTO MINI GAME ==================
 task.spawn(function()
 
@@ -1859,6 +1973,53 @@ end
 
 end
 
+-===================== Runner MASTERY GOLDEN=======================
+
+local function runAutoMasteryGolden()
+
+    AutoSystem.masteryGoldenRunning = true
+
+    print("🔥 AUTO MASTERY GOLDEN START")
+
+    while AutoSystem.enabled do
+
+        local masteryLevel = getGoldenMasteryLevel()
+
+        print("📈 Mastery Level:", masteryLevel)
+
+        if masteryLevel >= 100 then
+
+            print("✅ LEVEL 100 -> STOP ALL")
+
+            AutoSystem.enabled = false
+            AutoSystem.autoClick = false
+
+            deleteTrashPets()
+
+            AutoSystem.masteryFinished = true
+            break
+        end
+
+        local ids = getPets()
+
+        if #ids >= 6 then
+            AutoSystem.mode = "GOLDEN"
+        else
+
+            if hatchFolder then
+                hatchFolder.Functions.OpenEgg:InvokeServer("Spring Blossom", AutoSystem.eggAmount)
+            end
+        end
+
+        task.wait(0.2)
+    end
+
+    AutoSystem.masteryGoldenRunning = false
+
+    eggTeleported = false
+    CurrentMode = "EGG"
+end
+
 -- ================== UPGRADE GEM ==================
 local function runUpgradeGem()
 
@@ -1963,6 +2124,10 @@ task.spawn(function()
             CurrentMode = "EGG"
         elseif CurrentMode == "FIND_GEM" then
             runFindGem()
+            eggTeleported = false
+            CurrentMode = "EGG"
+        elseif CurrentMode == "AUTO_MASTERY_GOLDEN" then
+            runAutoMasteryGolden()
             eggTeleported = false
             CurrentMode = "EGG"
         elseif CurrentMode == "EGG" then
