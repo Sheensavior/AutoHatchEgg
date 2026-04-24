@@ -1946,7 +1946,7 @@ local function runMasteryGolden()
         end
 
         pcall(function()
-            openEggRemote:InvokeServer("Basic", 11)
+            openEggRemote:InvokeServer("Basic", AutoSystem.eggAmount)
         end)
 
         pcall(function()
