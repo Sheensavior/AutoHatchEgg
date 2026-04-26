@@ -1,3 +1,4 @@
+
 repeat task.wait() until game:IsLoaded()
 repeat task.wait() until game.Players.LocalPlayer
 task.wait(15)
@@ -132,6 +133,7 @@ local function updateMasteryStatus()
         warn("⚠️ Mastery chưa load")
     end
 end
+-----------------------------------------
 local function getEnchantLevel()
 
     local success, text = pcall(function()
@@ -145,7 +147,8 @@ local function getEnchantLevel()
     end)
 
     if success and text then
-        return parseMasteryLevel(text)
+        local lv = string.match(string.lower(text), "lv%.%s*(%d+)")
+        return tonumber(lv) or 0
     end
 
     return 0
@@ -422,21 +425,10 @@ end
 local function getFirstPetId()
 
     for _, pet in pairs(container:GetChildren()) do
+        local id = pet:GetAttribute("Id")
 
-        -- bỏ rác UI
-        if pet:IsA("Frame") then
-
-            local name = pet.Name
-
-            if name ~= "UIAspectRatioConstraint" and name ~= "UICorner" then
-
-                local id = pet:GetAttribute("Id")
-
-                if id then
-                    return id
-                end
-
-            end
+        if id then
+            return id
         end
     end
 
@@ -918,8 +910,8 @@ Instance.new("UICorner", masteryGoldenBtn)
 
 local masteryEnchantBtn = Instance.new("TextButton", masteryFrame)
 masteryEnchantBtn.Size = UDim2.new(1,-20,0,60)
-masteryEnchantBtn.Position = UDim2.new(0,10,0,90) -- nằm dưới nút golden
-masteryEnchantBtn.Text = "MASTERY ENCHANTING MAX"
+masteryEnchantBtn.Position = UDim2.new(0,10,0,90)
+masteryEnchantBtn.Text = "MASTERY ENCHANT MAX"
 masteryEnchantBtn.BackgroundColor3 = Color3.fromRGB(120,0,180)
 masteryEnchantBtn.TextColor3 = Color3.new(1,1,1)
 masteryEnchantBtn.Font = Enum.Font.GothamBold
@@ -2090,23 +2082,31 @@ local function runMasteryGolden()
 end
 
 ---------------------------------------------------------------------
+-- ================== AUTO MASTERY Enchant ==================
 local function runMasteryEnchant()
 
     if masteryEnchantRunning then return end
     masteryEnchantRunning = true
 
-    print("✨ START MASTERY ENCHANT")
+    print("✨ START ENCHANT")
 
-    local JobID = game.JobId
+    -- 🔥 ÉP MỞ INVENTORY (QUAN TRỌNG)
+    setInventory(true)
+    task.wait(1)
+
+    if not IDServer then
+        warn("❌ No IDServer")
+        masteryEnchantRunning = false
+        return
+    end
 
     local remote = game:GetService("ReplicatedStorage")
-        :WaitForChild(JobID)
+        :WaitForChild(IDServer)
         :WaitForChild("Functions")
         :WaitForChild("EnchantPet")
 
     while true do
 
-        -- check level
         local lv = getEnchantLevel()
 
         if lv >= 100 then
@@ -2114,15 +2114,14 @@ local function runMasteryEnchant()
             break
         end
 
-        -- lấy pet
         local idpet = getFirstPetId()
 
         if not idpet then
-            warn("❌ Không có pet")
-            break
+            warn("❌ No pet, retry...")
+            task.wait(0.5)
+            continue
         end
 
-        -- gọi remote
         pcall(function()
             remote:InvokeServer(idpet)
         end)
@@ -2131,9 +2130,8 @@ local function runMasteryEnchant()
     end
 
     masteryEnchantRunning = false
-    print("🛑 STOP MASTERY ENCHANT")
+    print("🛑 STOP ENCHANT")
 end
-
 -- ================== FIND GEM MERCHANT ==================
 local function runFindGem()
 
