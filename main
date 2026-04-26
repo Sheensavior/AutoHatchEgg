@@ -65,6 +65,8 @@ local ModeQueue = {}
 local CurrentMode = "EGG"
 local masteryGoldenRunning = false
 local eggTeleported = false
+local potionMasteryDone = false
+local tapLootMasteryDone = false
 
 local function requestMode(mode)
     -- tránh spam trùng
@@ -86,6 +88,49 @@ local function getNextMode()
     local nextMode = table.remove(ModeQueue, 1)
     print("📤 Run:", nextMode)
     return nextMode
+end
+
+-- ================== MASTERY CHECK ==================
+local function parseMasteryLevel(text)
+
+    if not text then
+        return 0
+    end
+
+    local lv = string.match(string.lower(text), "lv%.%s*(%d+)")
+
+    return tonumber(lv) or 0
+end
+
+local function updateMasteryStatus()
+
+    local success = pcall(function()
+
+        local container = player.PlayerGui
+            :WaitForChild("Tabs")
+            :WaitForChild("Mastery")
+            :WaitForChild("Menu")
+            :WaitForChild("Container")
+
+        local potionText = container
+            :WaitForChild("Potions")
+            :WaitForChild("Level")
+
+        local tapLootText = container
+            :WaitForChild("TapLoot")
+            :WaitForChild("Level")
+
+        local potionLv = parseMasteryLevel(potionText.Text)
+        local tapLootLv = parseMasteryLevel(tapLootText.Text)
+
+        potionMasteryDone = potionLv >= 100
+        tapLootMasteryDone = tapLootLv >= 100
+
+    end)
+
+    if not success then
+        warn("⚠️ Mastery chưa load")
+    end
 end
 
 -- ================== SAVE ==================
@@ -127,6 +172,15 @@ for _, v in pairs(rs:GetChildren()) do
     end
 end
 
+-- ================== AUTO MASTERY WATCHER ==================
+task.spawn(function()
+
+    while true do
+        updateMasteryStatus()
+        task.wait(2)
+    end
+
+end)
 -- ================== AUTO USE POTION ==================
 task.spawn(function()
 
@@ -187,7 +241,10 @@ task.spawn(function()
 
     while true do
 
-        -- 🔥 CHẠY NGAY
+        if potionMasteryDone then
+            task.wait(30)
+        continue
+        end
         local holder = getHolder()
         local remote = getRemote()
 
@@ -1477,6 +1534,10 @@ task.spawn(function()
     local nextTapLootTime = 0
 
     while true do
+        if tapLootMasteryDone then
+            task.wait(30)
+            continue
+        end
         local now = os.time()
 
         if now >= nextTapLootTime then
@@ -2210,7 +2271,9 @@ task.spawn(function()
             eggTeleported = false
             CurrentMode = "EGG"
         elseif CurrentMode == "TAP_LOOT" then
+            if not tapLootMasteryDone then
             runTapLoot()
+            end
             eggTeleported = false
             CurrentMode = "EGG"
         elseif CurrentMode == "MASTERY_GOLDEN" then
