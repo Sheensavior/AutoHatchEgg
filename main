@@ -1230,7 +1230,7 @@ rebirthBox.FocusLost:Connect(function()
     local num = tonumber(rebirthBox.Text)
 
     if num then
-        AutoSystem.autoRebirthDelay = math.clamp(num, 5, 3600) -- min 5s
+        AutoSystem.autoRebirthDelay = math.clamp(num, 0, 3600)
         saveData()
     end
 
@@ -1442,6 +1442,12 @@ task.spawn(function()
     end
 
     while true do
+
+    if AutoSystem.autoRebirthDelay <= 0 then
+        task.wait(1)
+        continue
+    end
+
     task.wait(AutoSystem.autoRebirthDelay)
 
     local text = label.Text
