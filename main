@@ -65,6 +65,7 @@ local ModeQueue = {}
 local CurrentMode = "EGG"
 local masteryGoldenRunning = false
 local eggTeleported = false
+local masteryEnchantRunning = false
 local potionMasteryDone = false
 local tapLootMasteryDone = false
 
@@ -873,6 +874,16 @@ masteryGoldenBtn.Font = Enum.Font.GothamBold
 masteryGoldenBtn.TextSize = 22
 Instance.new("UICorner", masteryGoldenBtn)
 
+local masteryEnchantBtn = Instance.new("TextButton", masteryFrame)
+masteryEnchantBtn.Size = UDim2.new(1,-20,0,60)
+masteryEnchantBtn.Position = UDim2.new(0,10,0,95)
+masteryEnchantBtn.Text = "MASTERY ENCHANTING MAX"
+masteryEnchantBtn.BackgroundColor3 = Color3.fromRGB(120,0,180)
+masteryEnchantBtn.TextColor3 = Color3.new(1,1,1)
+masteryEnchantBtn.Font = Enum.Font.GothamBold
+masteryEnchantBtn.TextSize = 22
+Instance.new("UICorner", masteryEnchantBtn)
+
 -- TOGGLE
 local toggle = Instance.new("TextButton", autoFrame)
 toggle.Size = UDim2.new(1,-20,0,50)
@@ -1308,6 +1319,15 @@ end)
 masteryGoldenBtn.MouseButton1Click:Connect(function()
     requestMode("MASTERY_GOLDEN")
 end)
+----------------------------------------------------
+masteryEnchantBtn.MouseButton1Click:Connect(function()
+
+    task.spawn(function()
+        runMasteryEnchanting()
+    end)
+
+end)
+
 -- ================== AUTO INVENTORY LOOP ==================
 task.spawn(function()
     while true do
@@ -2109,6 +2129,76 @@ local function runFindGem()
     end
 
     print("❌ NOT FOUND GEM MERCHANT")
+end
+
+-- ================== MASTERY ENCHANTING ==================
+
+    local enchantingLabel = player.PlayerGui
+        :WaitForChild("Tabs")
+        :WaitForChild("Mastery")
+        :WaitForChild("Menu")
+        :WaitForChild("Container")
+        :WaitForChild("Enchanting")
+        :WaitForChild("Level")
+
+    local enchantRemote = game:GetService("ReplicatedStorage")
+        :WaitForChild(JobID)
+        :WaitForChild("Functions")
+        :WaitForChild("EnchantPet")
+
+    local function getEnchantLevel()
+
+        local text = enchantingLabel.Text
+
+        local lv = string.match(string.lower(text), "lv%.%s*(%d+)")
+
+        return tonumber(lv) or 0
+    end
+
+    local function getFirstPetId()
+
+        for _, pet in pairs(container:GetChildren()) do
+
+            if pet:IsA("Frame") then
+
+                local id = pet:GetAttribute("Id")
+
+                if id then
+                    return id
+                end
+            end
+        end
+
+        return nil
+    end
+
+    while true do
+
+        local currentLevel = getEnchantLevel()
+
+        if currentLevel >= 100 then
+            print("✅ ENCHANTING MASTERY DONE")
+            break
+        end
+
+        local idpet = getFirstPetId()
+
+        if not idpet then
+            warn("❌ Không tìm thấy pet")
+            task.wait(1)
+            continue
+        end
+
+        pcall(function()
+            enchantRemote:InvokeServer(idpet)
+        end)
+
+        task.wait(0.1)
+    end
+
+    masteryEnchantRunning = false
+
+    print("🛑 STOP MASTERY ENCHANTING")
 end
 -- ================== POTION RUNNER ==================
 local function runPotion()
